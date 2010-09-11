@@ -10,15 +10,19 @@ FRAMEWORK_COMMON_OUTPUT_DIR="$EXECUTION_DIR/build/framework"
 
 # Global variables
 param_copy_source_files=false
+param_project_name=""
+param_sdk_version=""
+
 project_name=""
+sdk_version=""
 
 # User manual
 usage() {
     echo ""
-    echo "This script packages a static library project into a reusable .framework"
-    echo "for iOS projects. It must be launched from the directory containing the"
-    echo ".xcodeproj of a static library project, and will generate framework bundles"
-    echo "under build/framework"
+    echo "This script compiles and packages a static library project into a reusable"
+    echo ".framework for iOS projects. The script must be launched from the directory"
+    echo "containing the .xcodeproj of a static library project, and will generate"
+    echo "framework bundles under the build/framework directory"
     echo ""
     echo "Frameworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. The configuration which"
@@ -38,6 +42,9 @@ usage() {
     echo ""
     echo "Options:"
     echo "   -h:                    Display this documentation"
+    echo "   -k:                    By default the compilation is made against the most"
+    echo "                          recent version of the iOS SDK. Use this option to"
+    echo "                          use a specific version number, e.g. 4.0"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "   -s:                    Add the complete source code to the bundle file."
@@ -47,14 +54,17 @@ usage() {
 }
 
 # Processing command-line parameters
-while getopts hp:sv OPT; do
+while getopts hk:p:sv OPT; do
     case "$OPT" in
         h)
             usage
             exit 0
             ;;
+        k)
+            param_sdk_version="$OPTARG"
+            ;;  
         p) 
-            project_name="$OPTARG"
+            param_project_name="$OPTARG"
             ;;
         s)
             param_copy_source_files=true
@@ -91,7 +101,7 @@ if [ -z "$public_headers_file" ]; then
 fi
 
 # If project name not specified, find it
-if [ -z "$project_name" ]; then
+if [ -z "$param_project_name" ]; then
     # Find all .xcodeproj directories. ls does not provide a way to list directories only,
     # we must do this manually
     xcodeproj_list=`ls -l | grep ".xcodeproj" | grep "^d" | awk '{print $9}'`
@@ -106,10 +116,22 @@ if [ -z "$project_name" ]; then
     project_name=`echo "$xcodeproj_list" | sed 's/.xcodeproj//g'`
 # Else check that the project specified exists
 else
-    if [ ! -d "$EXECUTION_DIR/$project_name.xcodeproj" ]; then
-        echo "Error: The project $project_name does not exist"
+    if [ ! -d "$EXECUTION_DIR/$param_project_name.xcodeproj" ]; then
+        echo "Error: The project $param_project_name does not exist"
         exit 1
     fi
+    
+    project_name="$param_project_name"
+fi
+
+# If no SDK version specified, will use the default. Otherwise check availability
+if [ ! -z "$param_sdk_version" ]; then
+    xcodebuild -showsdks | grep -w "iphoneos$param_sdk_version" > /dev/null
+    if [ "$?" -ne "0" ]; then
+        echo "Error: Incorrect SDK version, or SDK version not available on this computer"
+        exit 1
+    fi
+    sdk_version="$param_sdk_version"
 fi
 
 # Framework directory ( 
