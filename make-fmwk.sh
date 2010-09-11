@@ -105,7 +105,7 @@ fi
 
 # Check that the public header file exists
 if [ ! -f "$public_headers_file" ]; then
-    echo "Error: The public header file $public_headers_file does not exist"
+    echo "[Error] The public header file $public_headers_file does not exist"
     exit 1
 fi
 
@@ -117,7 +117,7 @@ if [ -z "$param_project_name" ]; then
     
     # Only one project must exist if the -p option is not used
     if [ `echo "$xcodeproj_list" | wc -l` -ne "1" ]; then
-        echo "Error: Several .xcodeproj directories found; use the -p option for disambiguation"
+        echo "[Error] Several .xcodeproj directories found; use the -p option for disambiguation"
         exit 1
     fi
     
@@ -126,7 +126,7 @@ if [ -z "$param_project_name" ]; then
 # Else check that the project specified exists
 else
     if [ ! -d "$EXECUTION_DIR/$param_project_name.xcodeproj" ]; then
-        echo "Error: The project $param_project_name does not exist"
+        echo "[Error] The project $param_project_name does not exist"
         exit 1
     fi
     
@@ -142,7 +142,7 @@ if [ -z "$param_sdk_version" ]; then
 else
     xcodebuild -showsdks | grep -w "iphoneos$param_sdk_version" > /dev/null
     if [ "$?" -ne "0" ]; then
-        echo "Error: Incorrect SDK version, or SDK version not available on this computer"
+        echo "[Error] Incorrect SDK version, or SDK version not available on this computer"
         exit 1
     fi
     sdk_version="$param_sdk_version"
@@ -153,10 +153,13 @@ if [ ! -d "$FRAMEWORK_COMMON_OUTPUT_DIR" ]; then
     mkdir -p "$FRAMEWORK_COMMON_OUTPUT_DIR"
 fi
 
+# Framework name contains build flavor to avoid confusion
+framework_name="$project_name-$configuration_name"
+
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphonesimulator$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name-simulator.buildlog" 
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     exit 1
@@ -164,7 +167,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphoneos$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name-device.buildlog"
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     exit 1
@@ -174,7 +177,7 @@ fi
 echo "Creating framework bundle..."
 
 # Framework directory
-framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name.framework"
+framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name.framework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
@@ -190,21 +193,22 @@ mkdir -p "$framework_output_dir"
 mkdir -p "$framework_output_dir/Versions/A/Headers"
 mkdir -p "$framework_output_dir/Versions/A/Resources"
 
-# Symbolic links. The link target has to be given as a relative path to where the link file is located,
+# Symbolic links to directories. The link target has to be given as a relative path to where the link file is located,
 # otherwise links will break when the framework is moved
 ln -s "./A" "$framework_output_dir/Versions/Current"
 ln -s "./Versions/Current/Headers" "$framework_output_dir/Headers"
-ln -s "./Versions/Current/Resources" "$framework_output_dir/Resources" 
-ln -s "./Versions/Current/$project_name" "$framework_output_dir/$project_name"
+ln -s "./Versions/Current/Resources" "$framework_output_dir/Resources"
 
-# Packing static libraries as universal binaries
+# Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
+# framework bundle, the universal binaries must bear the exact same name as the framework
 echo "Packing binaries…"
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
-    -o "$framework_output_dir/Versions/A/$project_name"
+    -o "$framework_output_dir/Versions/A/$framework_name"
+ln -s "./Versions/Current/$framework_name" "$framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
-echo "Copying public header files..."
+echo "Copying public header files…"
 public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
 
 # Locate each public file and add it to the framework bundle
@@ -213,7 +217,7 @@ do
     # Header files are copied into the build directories, omit those results
     header_path=`find "$EXECUTION_DIR" -name "$header_file" | grep -v build`
     if [ "$?" -ne "0" ]; then
-        echo "Warning: The header file $header_file appearing in $public_headers_file does not exist"
+        echo "[Warning] The header file $header_file appearing in $public_headers_file does not exist"
         continue
     fi
     
