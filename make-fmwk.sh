@@ -255,7 +255,25 @@ do
 done
 
 # Copy localized resources, preserving the directory structure
-# TODO
+localized_resource_files=(`find . -ipath "*.lproj/*" -not -ipath "*/.*" -not -ipath "*/build/*"`)
+for localized_resource_file in ${localized_resource_files[@]}
+do
+    # Tokenize the path
+    path_tokens_arr=(`echo "$localized_resource_file" | tr "/" "\n"`)
+    
+    # Find the localization directory name
+    token_nbr=${#path_tokens_arr[*]}
+    localization_dir_name="${path_tokens_arr[$token_nbr-2]}"
+    
+    # Create the localization directory if it does not exist
+    framework_localization_dir_name="$framework_output_dir/Versions/A/Resources/$localization_dir_name"
+    if [ ! -d "$framework_localization_dir_name" ]; then
+        mkdir -p "$framework_localization_dir_name"
+    fi
+    
+    # Copy the resource file
+    cp "$localized_resource_file" "$framework_localization_dir_name"
+done
 
 # Copy sources if desired
 if $param_copy_source_files; then
@@ -273,7 +291,6 @@ if $param_copy_source_files; then
     done
     
     # Copy all header files (omit duplicates in build directory)
-    # TODO: use not ipath
     header_files=(`find "$EXECUTION_DIR" -name "*.h" -not -ipath "*/build/*"`)
     for header_file in ${header_files[@]}
     do
