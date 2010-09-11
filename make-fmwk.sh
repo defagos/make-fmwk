@@ -103,6 +103,12 @@ if [ -z "$public_headers_file" ]; then
     exit 1
 fi
 
+# Check that the public header file exists
+if [ ! -f "$public_headers_file" ]; then
+    echo "Error: The public header file $public_headers_file does not exist"
+    exit 1
+fi
+
 # If project name not specified, find it
 if [ -z "$param_project_name" ]; then
     # Find all .xcodeproj directories. ls does not provide a way to list directories only,
@@ -196,6 +202,24 @@ echo "Packing binaries…"
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
     -o "$framework_output_dir/Versions/A/$project_name"
+
+# Load the public header file list into an array (remove blank lines if anys)
+echo "Copying public header files..."
+public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
+
+# Locate each public file and add it to the framework bundle
+for header_file in ${public_headers_arr[@]}
+do
+    # Header files are copied into the build directories, omit those results
+    header_path=`find "$EXECUTION_DIR" -name "$header_file" | grep -v build`
+    if [ "$?" -ne "0" ]; then
+        echo "Warning: The header file $header_file appearing in $public_headers_file does not exist"
+        continue
+    fi
+    
+    # Copy the header into the bundle
+    cp "$header_path" "$framework_output_dir/Versions/A/Headers"
+done
 
 # Done
 echo "Done."
