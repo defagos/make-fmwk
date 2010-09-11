@@ -71,7 +71,6 @@ while getopts hk:p:sv OPT; do
             ;;
         s)
             param_copy_source_files=true
-            exit 0
             ;;
         v)
             echo "$SCRIPT_NAME version $VERSION_NBR"
@@ -201,14 +200,14 @@ ln -s "./Versions/Current/Resources" "$framework_output_dir/Resources"
 
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
-echo "Packing binaries…"
+echo "Packing binaries..."
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
     -o "$framework_output_dir/Versions/A/$framework_name"
 ln -s "./Versions/Current/$framework_name" "$framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
-echo "Copying public header files…"
+echo "Copying public header files..."
 public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
 
 # Locate each public file and add it to the framework bundle
@@ -224,6 +223,29 @@ do
     # Copy the header into the bundle
     cp "$header_path" "$framework_output_dir/Versions/A/Headers"
 done
+
+# Copy sources if desired
+if $param_copy_source_files; then
+    echo "Copying source code..."
+
+    # Source file are not part of a framework bundle as defined by Apple, but we follow the same pattern
+    mkdir -p "$framework_output_dir/Versions/A/Sources"
+    ln -s "./Versions/Current/Sources" "$framework_output_dir/Sources"
+    
+    # Copy all source files
+    source_files=(`find "$EXECUTION_DIR" -name "*.m"`)
+    for source_file in ${source_files[@]}
+    do
+        cp "$source_file" "$framework_output_dir/Versions/A/Sources"
+    done
+    
+    # Copy all header files (omit duplicates in build directory)
+    header_files=(`find "$EXECUTION_DIR" -name "*.h" | grep -v build`)
+    for header_file in ${header_files[@]}
+    do
+        cp "$header_file" "$framework_output_dir/Versions/A/Sources"
+    done
+fi
 
 # Done
 echo "Done."
