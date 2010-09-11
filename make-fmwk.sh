@@ -213,16 +213,20 @@ public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
 # Locate each public file and add it to the framework bundle
 for header_file in ${public_headers_arr[@]}
 do
-    # Header files are copied into the build directories, omit those results
-    # TODO: use not ipath
-    header_path=`find "$EXECUTION_DIR" -name "$header_file" | grep -v build`
-    if [ "$?" -ne "0" ]; then
+    # Header files are also copied into the build directories, need to omit those files
+    header_path=`find "$EXECUTION_DIR" -name "$header_file" -not -ipath "*/build/*"`
+    if [ -z "$header_path" ]; then
         echo "[Warning] The header file $header_file appearing in $public_headers_file does not exist"
         continue
     fi
     
     # Copy the header into the bundle
-    cp "$header_path" "$framework_output_dir/Versions/A/Headers"
+    cp "$header_path" "$framework_output_dir/Versions/A/Headers" > /dev/null
+    # The copy might fail, most notably if the header file appears several times in the source tree
+    if [ "$?" -ne "0" ]; then
+        echo "[Warning] Failed to copy $header_path; does this file appear once in your source tree?"
+        continue
+    fi
 done
 
 # Copy all resource files. Since a resource file can be almost anything, we define a resource file:
@@ -270,7 +274,7 @@ if $param_copy_source_files; then
     
     # Copy all header files (omit duplicates in build directory)
     # TODO: use not ipath
-    header_files=(`find "$EXECUTION_DIR" -name "*.h" | grep -v build`)
+    header_files=(`find "$EXECUTION_DIR" -name "*.h" -not -ipath "*/build/*"`)
     for header_file in ${header_files[@]}
     do
         cp "$header_file" "$framework_output_dir/Versions/A/Sources"
