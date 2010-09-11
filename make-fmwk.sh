@@ -5,8 +5,10 @@ VERSION_NBR=1.0
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`                     
+# Build directory
+BUILD_DIR="$EXECUTION_DIR/build"
 # Directory where all frameworks are saved (for all possible configurations)
-FRAMEWORK_COMMON_OUTPUT_DIR="$EXECUTION_DIR/build/framework"
+FRAMEWORK_COMMON_OUTPUT_DIR="$BUILD_DIR/framework"
 
 # Global variables
 param_copy_source_files=false
@@ -189,7 +191,11 @@ ln -s "./Versions/Current/Headers" "$framework_output_dir/Headers"
 ln -s "./Versions/Current/Resources" "$framework_output_dir/Resources" 
 ln -s "./Versions/Current/$project_name" "$framework_output_dir/$project_name"
 
-
+# Packing static libraries as universal binaries
+echo "Packing binaries…"
+lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
+    "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
+    -o "$framework_output_dir/Versions/A/$project_name"
 
 # Done
 echo "Done."
