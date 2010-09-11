@@ -214,6 +214,7 @@ public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
 for header_file in ${public_headers_arr[@]}
 do
     # Header files are copied into the build directories, omit those results
+    # TODO: use not ipath
     header_path=`find "$EXECUTION_DIR" -name "$header_file" | grep -v build`
     if [ "$?" -ne "0" ]; then
         echo "[Warning] The header file $header_file appearing in $public_headers_file does not exist"
@@ -223,6 +224,34 @@ do
     # Copy the header into the bundle
     cp "$header_path" "$framework_output_dir/Versions/A/Headers"
 done
+
+# Copy all resource files. Since a resource file can be almost anything, we define a resource file:
+#   - neither to be a hidden file, nor to be contained in a hidden directory (use find . -not -ipath "*/.*"). This
+#     in particular filters out revision control system files
+#   - not to be contained in the build directory
+#   - not to be a source file (.m, .h or .pch)
+#   - not to be contained in the <ProjectName>.xcodeproj folder
+#   - not the file listing public headers
+# All those files are put in a common flat directory. Localized resources need a special treatment, see below. Note
+# that the exclusion patterns below do not remove directories (since they end up with /*), but since cp is used 
+# (and not cp -r) they won't be copied. Had we simply used "*/build*"-like patterns, then directories like */buildxyz
+# would have been excluded as well, which is incorrect 
+resource_files=(`find "$EXECUTION_DIR" \
+    -not -ipath "*/.*" \
+    -not -ipath "*/build/*" \
+    -not -ipath "*.xcodeproj/*" \
+    -not -ipath "*.lproj/*" \
+    -not -iname "*.m" \
+    -not -iname "*.h" \
+    -not -iname "*.pch" \
+    -not -iname "$public_headers_file"`)
+for resource_file in ${resource_files[@]}
+do
+    cp "$resource_file" "$framework_output_dir/Versions/A/Resources" &> /dev/null
+done
+
+# Copy localized resources, preserving the directory structure
+# TODO
 
 # Copy sources if desired
 if $param_copy_source_files; then
@@ -240,6 +269,7 @@ if $param_copy_source_files; then
     done
     
     # Copy all header files (omit duplicates in build directory)
+    # TODO: use not ipath
     header_files=(`find "$EXECUTION_DIR" -name "*.h" | grep -v build`)
     for header_file in ${header_files[@]}
     do
