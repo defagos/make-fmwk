@@ -22,7 +22,8 @@ usage() {
     echo "This script compiles and packages a static library project into a reusable"
     echo ".framework for iOS projects. The script must be launched from the directory"
     echo "containing the .xcodeproj of a static library project, and will generate"
-    echo "framework bundles under the build/framework directory"
+    echo "framework bundles under the build/framework directory. Build logs will be"
+    echo "saved in this directory as well"
     echo ""
     echo "Frameworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. The configuration which"
@@ -124,8 +125,13 @@ else
     project_name="$param_project_name"
 fi
 
-# If no SDK version specified, will use the default. Otherwise check availability
-if [ ! -z "$param_sdk_version" ]; then
+# If no SDK version specified, use the latest available
+if [ -z "$param_sdk_version" ]; then
+    # The showsdks command seems to return SDKs from the oldest to the most recent one. Just
+    # keep the last line and extract the version
+    sdk_version=`xcodebuild -showsdks | grep iphoneos | tail -n 1 | awk '{print $6}' | sed 's/iphoneos//g'`
+# Check that the SDK specified exists
+else
     xcodebuild -showsdks | grep -w "iphoneos$param_sdk_version" > /dev/null
     if [ "$?" -ne "0" ]; then
         echo "Error: Incorrect SDK version, or SDK version not available on this computer"
@@ -134,15 +140,37 @@ if [ ! -z "$param_sdk_version" ]; then
     sdk_version="$param_sdk_version"
 fi
 
-# Framework directory ( 
-framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name.framework"
+# Create the main output directory for framework stuff if it does not already exist
+if [ ! -d "$FRAMEWORK_COMMON_OUTPUT_DIR" ]; then
+    mkdir -p "$FRAMEWORK_COMMON_OUTPUT_DIR"
+fi
 
-# Begin framework creation
-echo "Creating framework for project $project_name using the $configuration_name configuration..."
+# Run the builds
+echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphonesimulator$sdk_version" \
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name-simulator.buildlog" 
+if [ "$?" -ne "0" ]; then
+    echo "Simulator build failed. Check the logs"
+    exit 1
+fi
+
+echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphoneos$sdk_version" \
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name-device.buildlog"
+if [ "$?" -ne "0" ]; then
+    echo "Device build failed. Check the logs"
+    exit 1
+fi
+
+# Create framework
+echo "Creating framework bundle..."
+
+# Framework directory
+framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$project_name-$configuration_name.framework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
-    echo "Framework already exists for configuration $configuration_name. Cleaning up..."
+    echo "Framework already exists. Cleaning up first..."
     rm -rf "$framework_output_dir"
 fi
 
@@ -161,7 +189,7 @@ ln -s "./Versions/Current/Headers" "$framework_output_dir/Headers"
 ln -s "./Versions/Current/Resources" "$framework_output_dir/Resources" 
 ln -s "./Versions/Current/$project_name" "$framework_output_dir/$project_name"
 
-# TODO: Find .a file names for assembling into universal file
+
 
 # Done
-echo "Done"
+echo "Done."
