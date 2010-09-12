@@ -1,0 +1,3 @@
+build/
+PrefixLibrary.xcodeproj/*.pbxuser
+PrefixLibrary.xcodeproj/*.perspectivev3
