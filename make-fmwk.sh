@@ -240,6 +240,7 @@ done
 # that the exclusion patterns below do not remove directories (since they end up with /*), but since cp is used 
 # (and not cp -r) they won't be copied. Had we simply used "*/build*"-like patterns, then directories like */buildxyz
 # would have been excluded as well, which is incorrect 
+echo "Copying resource files..."
 resource_files=(`find "$EXECUTION_DIR" \
     -not -ipath "*/.*" \
     -not -ipath "*/build/*" \
@@ -255,6 +256,7 @@ do
 done
 
 # Copy localized resources, preserving the directory structure
+echo "Copying localized resource files…"
 localized_resource_files=(`find . -ipath "*.lproj/*" -not -ipath "*/.*" -not -ipath "*/build/*"`)
 for localized_resource_file in ${localized_resource_files[@]}
 do
