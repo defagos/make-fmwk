@@ -12,7 +12,6 @@ FRAMEWORK_COMMON_OUTPUT_DIR="$BUILD_DIR/framework"
 
 # Global variables
 param_copy_source_files=false
-param_framework_name=""
 param_project_name=""
 param_sdk_version=""
 
@@ -25,18 +24,22 @@ usage() {
     echo "This script compiles and packages a static library project into a reusable"
     echo ".framework for iOS projects. The script must be launched from the directory"
     echo "containing the .xcodeproj of a static library project, and will generate"
-    echo "a framework pseudo-bundle under the build/framework directory (along with"
+    echo "a .framework pseudo-bundle under the build/framework directory (along with"
     echo "build logs)."
     echo ""
-    echo "Frameworks are built on a per-configuration basis since a universal binary"
+    echo ".frameworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
-    echo "process are packed into the framework itself."
+    echo "process are packed into the framework itself (framework.info file)."
     echo ""
     echo "The list of all headers to be made public is required. Based on this file,"
     echo "this script also generate a global framework header, e.g. to be imported in"
     echo "precompiled header files."
     echo ""
-    echo "Usage: $SCRIPT_NAME [-p project_name] [-o framework_name] [-s] [-v] [-h]"
+    echo "To avoid conflicting names when merging .framework resources with other"
+    echo ".framework resources or with application resources, all library resources"
+    echo "should be prefixed with the name of the .framework file."
+    echo ""
+    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version ] [-s] [-v] [-h]"
     echo "                    configuration_name public_headers_file"
     echo ""
     echo "Mandatory parameters:"
@@ -54,8 +57,6 @@ usage() {
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
     echo "                          use a specific version number, e.g. 4.0"
-    echo "   -o                     The name of the framework file; if omitted then the"
-    echo "                          project name will be used"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "   -s:                    Add the complete source code to the bundle file."
@@ -65,8 +66,20 @@ usage() {
     echo ""
 }
 
+# Checking that the name of a file, given its path, begins with a given prefix
+#   @param $1 the resource path
+#   @param $2 the prefix
+check_prefix() {
+    file_name="${1##*/}"
+        echo "$file_name" | grep "^${2}_" &> /dev/null
+        if [ "$?" -ne "0" ]; then
+            echo "[Warning] The resource file $file_name should be prefixed with ${2}_"
+            echo "          to avoid conflicts with external resources"
+        fi
+}
+
 # Processing command-line parameters
-while getopts hk:o:p:sv OPT; do
+while getopts hk:p:sv OPT; do
     case "$OPT" in
         h)
             usage
@@ -74,9 +87,6 @@ while getopts hk:o:p:sv OPT; do
             ;;
         k)
             param_sdk_version="$OPTARG"
-            ;;
-        o)
-            param_framework_name="$OPTARG"
             ;;
         p) 
             param_project_name="$OPTARG"
@@ -164,12 +174,8 @@ if [ ! -d "$FRAMEWORK_COMMON_OUTPUT_DIR" ]; then
     mkdir -p "$FRAMEWORK_COMMON_OUTPUT_DIR"
 fi
 
-# If framework name not specified, use project name
-if [ -z "$param_framework_name" ]; then
-    framework_name="$project_name"
-else
-    framework_name="$param_framework_name"
-fi
+# Framework name matches project name
+framework_name="$project_name"
 
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
@@ -296,6 +302,11 @@ resource_files=(`find "$EXECUTION_DIR" \
 for resource_file in ${resource_files[@]}
 do
     cp "$resource_file" "$resources_output_dir" &> /dev/null
+    
+    # Those files which could be copied are resources; check that their name begin with a prefix (strongly advised)
+    if [ "$?" -eq "0" ]; then
+        check_prefix "$resource_file" "$framework_name"
+    fi
 done
 
 # Copy localized resources, preserving the directory structure
@@ -318,6 +329,11 @@ do
     
     # Copy the resource file
     cp "$localized_resource_file" "$framework_localization_dir_name"
+    
+    # Those files which could be copied are resources; check that their name begin with a prefix (strongly advised)
+    if [ "$?" -eq "0" ]; then
+        check_prefix "$localized_resource_file" "$framework_name"
+    fi
 done
 
 # Copy sources if desired (useful when compiled with debugging information)
