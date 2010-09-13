@@ -49,6 +49,7 @@
 			children = (
 				08FB77AEFE84172EC02AAC07 /* Classes */,
 				32C88DFF0371C24200C91783 /* Other Sources */,
+				6F4F361D123E1C6C000BAB21 /* Resources */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
@@ -75,12 +76,19 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				6F2A93F5123D1D5C00A97F21 /* PrefixLibrary_apple.jpg */,
-				6F2A93F1123D1CB200A97F21 /* PrefixLibrary_Localizable.strings */,
 				AA747D9E0F9514B9006C5449 /* PrefixLibrary_Prefix.pch */,
-				6F2A93FA123D1DFA00A97F21 /* PrefixLibrary_SimpleViewController.xib */,
 			);
 			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		6F4F361D123E1C6C000BAB21 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				6F2A93FA123D1DFA00A97F21 /* PrefixLibrary_SimpleViewController.xib */,
+				6F2A93F5123D1D5C00A97F21 /* PrefixLibrary_apple.jpg */,
+				6F2A93F1123D1CB200A97F21 /* PrefixLibrary_Localizable.strings */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -122,6 +130,7 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "PrefixLibrary" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -205,7 +214,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 			};
 			name = Debug;
 		};
@@ -218,7 +227,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 			};
 			name = Release;
 		};

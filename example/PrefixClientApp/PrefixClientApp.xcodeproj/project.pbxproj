@@ -13,10 +13,10 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
 		28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 28AD733E0D9D9553002E5188 /* MainWindow.xib */; };
-		6F2A9421123D1FA700A97F21 /* PrefixLibrary-Debug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F2A9420123D1FA700A97F21 /* PrefixLibrary-Debug.framework */; };
-		6F2A9453123D214F00A97F21 /* PrefixLibrary_Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6F2A944F123D214F00A97F21 /* PrefixLibrary_Localizable.strings */; };
-		6F2A9454123D214F00A97F21 /* PrefixLibrary_apple.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6F2A9451123D214F00A97F21 /* PrefixLibrary_apple.jpg */; };
-		6F2A9455123D214F00A97F21 /* PrefixLibrary_SimpleViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F2A9452123D214F00A97F21 /* PrefixLibrary_SimpleViewController.xib */; };
+		6F8D078F123E570400FCF2AF /* PrefixLibrary-Debug.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F8D078E123E570400FCF2AF /* PrefixLibrary-Debug.framework */; };
+		6F8D0794123E572F00FCF2AF /* PrefixLibrary_apple.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 6F8D0792123E572F00FCF2AF /* PrefixLibrary_apple.jpg */; };
+		6F8D0795123E572F00FCF2AF /* PrefixLibrary_SimpleViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6F8D0793123E572F00FCF2AF /* PrefixLibrary_SimpleViewController.xib */; };
+		6F8D0798123E573900FCF2AF /* PrefixLibrary_Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6F8D0796123E573900FCF2AF /* PrefixLibrary_Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,10 +29,10 @@
 		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* PrefixClientApp_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixClientApp_Prefix.pch; sourceTree = "<group>"; };
-		6F2A9420123D1FA700A97F21 /* PrefixLibrary-Debug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "PrefixLibrary-Debug.framework"; path = "/Users/defagos/Development/iPhone/make-fmwk/examples/prefix/PrefixLibrary/build/framework/PrefixLibrary-Debug.framework"; sourceTree = "<absolute>"; };
-		6F2A9450123D214F00A97F21 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = PrefixLibrary_Localizable.strings; sourceTree = "<group>"; };
-		6F2A9451123D214F00A97F21 /* PrefixLibrary_apple.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = PrefixLibrary_apple.jpg; path = "../PrefixLibrary/build/framework/PrefixLibrary-Debug.framework/Versions/A/Resources/PrefixLibrary_apple.jpg"; sourceTree = SOURCE_ROOT; };
-		6F2A9452123D214F00A97F21 /* PrefixLibrary_SimpleViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = PrefixLibrary_SimpleViewController.xib; path = "../PrefixLibrary/build/framework/PrefixLibrary-Debug.framework/Versions/A/Resources/PrefixLibrary_SimpleViewController.xib"; sourceTree = SOURCE_ROOT; };
+		6F8D078E123E570400FCF2AF /* PrefixLibrary-Debug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "PrefixLibrary-Debug.framework"; path = "/Users/defagos/Development/iPhone/make-fmwk/example/PrefixLibrary/build/framework/PrefixLibrary-Debug.framework"; sourceTree = "<absolute>"; };
+		6F8D0792123E572F00FCF2AF /* PrefixLibrary_apple.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = PrefixLibrary_apple.jpg; path = ../PrefixLibrary/PrefixLibrary_apple.jpg; sourceTree = SOURCE_ROOT; };
+		6F8D0793123E572F00FCF2AF /* PrefixLibrary_SimpleViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = PrefixLibrary_SimpleViewController.xib; path = ../PrefixLibrary/PrefixLibrary_SimpleViewController.xib; sourceTree = SOURCE_ROOT; };
+		6F8D0797123E573900FCF2AF /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = ../PrefixLibrary/en.lproj/PrefixLibrary_Localizable.strings; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* PrefixClientApp-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "PrefixClientApp-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -44,7 +44,7 @@
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
-				6F2A9421123D1FA700A97F21 /* PrefixLibrary-Debug.framework in Frameworks */,
+				6F8D078F123E570400FCF2AF /* PrefixLibrary-Debug.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,7 +105,7 @@
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
 				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
-				6F2A9420123D1FA700A97F21 /* PrefixLibrary-Debug.framework */,
+				6F8D078E123E570400FCF2AF /* PrefixLibrary-Debug.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -121,21 +121,12 @@
 		6F2A9445123D211600A97F21 /* PrefixLibrary-Debug */ = {
 			isa = PBXGroup;
 			children = (
-				6F2A944E123D214F00A97F21 /* en.lproj */,
-				6F2A9451123D214F00A97F21 /* PrefixLibrary_apple.jpg */,
-				6F2A9452123D214F00A97F21 /* PrefixLibrary_SimpleViewController.xib */,
+				6F8D0796123E573900FCF2AF /* PrefixLibrary_Localizable.strings */,
+				6F8D0792123E572F00FCF2AF /* PrefixLibrary_apple.jpg */,
+				6F8D0793123E572F00FCF2AF /* PrefixLibrary_SimpleViewController.xib */,
 			);
 			name = "PrefixLibrary-Debug";
 			sourceTree = "<group>";
-		};
-		6F2A944E123D214F00A97F21 /* en.lproj */ = {
-			isa = PBXGroup;
-			children = (
-				6F2A944F123D214F00A97F21 /* PrefixLibrary_Localizable.strings */,
-			);
-			name = en.lproj;
-			path = "../PrefixLibrary/build/framework/PrefixLibrary-Debug.framework/Versions/A/Resources/en.lproj";
-			sourceTree = SOURCE_ROOT;
 		};
 /* End PBXGroup section */
 
@@ -164,6 +155,7 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "PrefixClientApp" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -187,9 +179,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				28AD733F0D9D9553002E5188 /* MainWindow.xib in Resources */,
-				6F2A9453123D214F00A97F21 /* PrefixLibrary_Localizable.strings in Resources */,
-				6F2A9454123D214F00A97F21 /* PrefixLibrary_apple.jpg in Resources */,
-				6F2A9455123D214F00A97F21 /* PrefixLibrary_SimpleViewController.xib in Resources */,
+				6F8D0794123E572F00FCF2AF /* PrefixLibrary_apple.jpg in Resources */,
+				6F8D0795123E572F00FCF2AF /* PrefixLibrary_SimpleViewController.xib in Resources */,
+				6F8D0798123E573900FCF2AF /* PrefixLibrary_Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,10 +200,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		6F2A944F123D214F00A97F21 /* PrefixLibrary_Localizable.strings */ = {
+		6F8D0796123E573900FCF2AF /* PrefixLibrary_Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				6F2A9450123D214F00A97F21 /* en */,
+				6F8D0797123E573900FCF2AF /* en */,
 			);
 			name = PrefixLibrary_Localizable.strings;
 			sourceTree = "<group>";
@@ -263,7 +255,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 			};
 			name = Debug;
 		};
@@ -277,7 +269,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PREBINDING = NO;
-				SDKROOT = iphoneos4.0;
+				SDKROOT = iphoneos4.1;
 			};
 			name = Release;
 		};
