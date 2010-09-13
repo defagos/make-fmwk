@@ -64,7 +64,7 @@ usage() {
     echo "                          Useful for frameworks compiled with debug symbols"
     echo "                          and intended for in-house developers"
     echo "   -t                     Tag identifying the version of the code which has"
-    echo "                          been compiled"
+    echo "                          been compiled. Added to framework.info."
     echo "   -v:                    Print the version number"
     echo ""
 }
