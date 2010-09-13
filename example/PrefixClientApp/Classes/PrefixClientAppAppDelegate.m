@@ -22,7 +22,7 @@
 //   2) Restore the resource links by emptying the "Framework Resources/PrefixLibrary-Debug" folder of the project
 //      explorer tree, and by adding the contents of the Resources folder of the .framework bundle you have just
 //      created.
-#import <PrefixLibrary-Debug/SimpleViewController.h>
+#import <PrefixLibrary/SimpleViewController.h>
 
 @interface PrefixClientAppAppDelegate ()
 
