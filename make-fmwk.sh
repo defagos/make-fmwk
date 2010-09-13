@@ -344,5 +344,12 @@ if $param_copy_source_files; then
     done
 fi
 
+# Add an information file
+information_file="$framework_output_dir/framework.info"
+echo "Project compiled: $project_name" >> "$information_file"
+echo "Configuration used for compilation: $configuration_name" >> "$information_file"
+echo "Version of make-fmwk used: $VERSION_NBR" >> "$information_file"
+echo "Date and time of creation: `date`" >> "$information_file"
+
 # Done
 echo "Done."
