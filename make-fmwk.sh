@@ -11,6 +11,7 @@ BUILD_DIR="$EXECUTION_DIR/build"
 FRAMEWORK_COMMON_OUTPUT_DIR="$BUILD_DIR/framework"
 
 # Global variables
+param_code_version=""
 param_copy_source_files=false
 param_project_name=""
 param_sdk_version=""
@@ -39,8 +40,8 @@ usage() {
     echo ".framework resources or with application resources, all library resources"
     echo "should be prefixed with the name of the .framework file."
     echo ""
-    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version ] [-s] [-v] [-h]"
-    echo "                    configuration_name public_headers_file"
+    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t code_version]"
+    echo "                    [-s] [-v] [-h] configuration_name public_headers_file"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -62,6 +63,8 @@ usage() {
     echo "   -s:                    Add the complete source code to the bundle file."
     echo "                          Useful for frameworks compiled with debug symbols"
     echo "                          and intended for in-house developers"
+    echo "   -t                     Tag identifying the version of the code which has"
+    echo "                          been compiled"
     echo "   -v:                    Print the version number"
     echo ""
 }
@@ -79,7 +82,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:p:sv OPT; do
+while getopts hk:p:st:v OPT; do
     case "$OPT" in
         h)
             usage
@@ -93,6 +96,9 @@ while getopts hk:p:sv OPT; do
             ;;
         s)
             param_copy_source_files=true
+            ;;
+        t)
+            param_code_version="$OPTARG"
             ;;
         v)
             echo "$SCRIPT_NAME version $VERSION_NBR"
@@ -363,6 +369,9 @@ fi
 # Add an information file
 information_file="$framework_output_dir/framework.info"
 echo "Project compiled: $project_name" >> "$information_file"
+if [ ! -z "$param_code_version" ]; then
+    echo "Code version: $param_code_version" >> "$information_file"
+fi
 echo "Configuration used for compilation: $configuration_name" >> "$information_file"
 echo "Version of make-fmwk used: $VERSION_NBR" >> "$information_file"
 echo "Date and time of creation: `date`" >> "$information_file"
