@@ -1,5 +1,32 @@
-Tool for creating Objective-C frameworks for iOS
-
-Based on Pete Goodliffe's article published on accu.org:
+************************************************************
+* Shell script for creating Objective-C frameworks for iOS *
+************************************************************
+Written by Samuel Défago, inspired by Pete Goodliffe's article published on accu.org:
    http://accu.org/index.php/articles/1594
    
+1) Introduction
+   ------------
+Xcode offers a framework creation project template for MacOS applications, but no such template
+is provided for iOS. One of the reasons is probably that a framework is an NSBundle, of which
+no other instance than the main bundle can exist on iOS. The stems from the fact that an NSBundle
+must contain executable code, otherwise it cannot be loaded (and therefore its resources cannot be
+accessed). Since iOS applications run in sandboxes, they are not allowed to use shared libraries,
+and therefore bundles cannot be loaded. Thus, for applications running on iOS, there is
+no way to load something like a framework, therefore no corresponding template is provided.
+
+But still one should have a way of reusing library code. Xcode provides a static library project
+template, with which static library files can be created. 
+
+Usually, this is achieved by
+checking out the source code of a library before adding it as a reference to a project.
+This approach works but is not really convenient. Moreover it exposes the source code,
+which might not be desired for commercial libraries.
+
+Xcode offers a static library project,
+but different libraries have to be linked whether we target the siumlator or the device
+itself. Moreover, libraries do not pack resources, neither do they offer a way to expose
+their public interface headers in a convenient way.
+
+
+NB: Document: add -objC to linker flags of the client using the lib
+    http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html

@@ -13,6 +13,7 @@ FRAMEWORK_COMMON_OUTPUT_DIR="$BUILD_DIR/framework"
 # Global variables
 param_code_version=""
 param_copy_source_files=false
+param_omit_version_in_name=false
 param_project_name=""
 param_sdk_version=""
 
@@ -41,7 +42,7 @@ usage() {
     echo "should be prefixed with the name of the .framework file."
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t code_version]"
-    echo "                    [-f] [-s] [-v] [-h] configuration_name public_headers_file"
+    echo "                    [-n] [-s] [-v] [-h] configuration_name public_headers_file"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -58,6 +59,11 @@ usage() {
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
     echo "                          use a specific version number, e.g. 4.0"
+    echo "   -n:                    By default, if the code version is specified it is"
+    echo "                          appended to the framework name. This allows projects"
+    echo "                          to be bound to specific framework versions. If -n"
+    echo "                          is used, the version number is not appended (if the"
+    echo "                          -t option was not used, -n has no effect)"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "   -s:                    Add the complete source code to the bundle file."
@@ -82,7 +88,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:p:st:v OPT; do
+while getopts hk:np:st:v OPT; do
     case "$OPT" in
         h)
             usage
@@ -90,6 +96,9 @@ while getopts hk:p:st:v OPT; do
             ;;
         k)
             param_sdk_version="$OPTARG"
+            ;;
+        n)
+            param_omit_version_in_name=true;
             ;;
         p) 
             param_project_name="$OPTARG"
@@ -180,13 +189,25 @@ if [ ! -d "$FRAMEWORK_COMMON_OUTPUT_DIR" ]; then
     mkdir -p "$FRAMEWORK_COMMON_OUTPUT_DIR"
 fi
 
-# Framework name matches project name
+# Framework name matches project name; by default the code version (if available) is appended, except
+# if this behavior is overriden (no warning, the user knows what shes is doing)
 framework_name="$project_name"
+if [ ! -z "$param_code_version" ]; then
+    if $param_omit_version_in_name; then
+        framework_full_name="$framework_name"
+    else
+        framework_full_name="$framework_name-$param_code_version"
+    fi
+# Warns if no version specified (good practice)
+else
+    echo "[Info] You should provide a code version for better traceability; use the -t option"
+    framework_full_name="$framework_name"
+fi
 
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphonesimulator$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name-simulator.buildlog" 
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     exit 1
@@ -194,7 +215,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphoneos$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name-device.buildlog"
+    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     exit 1
@@ -204,7 +225,7 @@ fi
 echo "Creating framework bundle..."
 
 # Framework directory
-framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_name.framework"
+framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name.framework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
@@ -233,7 +254,7 @@ echo "Packing binaries..."
 # TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
-    -o "$framework_output_dir/$framework_name"
+    -o "$framework_output_dir/$framework_full_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
@@ -276,7 +297,7 @@ if [ ! -f "$framework_output_dir/$framework_name.h" ]; then
     # Include all public headers
     for header_file in ${public_headers_arr[@]}
     do
-        echo "#import <$framework_name/$header_file>" >> "$global_header_file"
+        echo "#import <$framework_full_name/$header_file>" >> "$global_header_file"
     done
 # Warn if a public header with this name already exists
 else
@@ -293,7 +314,7 @@ fi
 # made for iOS)!
 # Prefixing the resource folder with the library is here just a trick to make it more convenient to use with Xcode (no 
 # renaming needed when the library resources are added, and easier to identify in the project explorer)
-resources_output_dir="$framework_output_dir/${framework_name}Resources"
+resources_output_dir="$framework_output_dir/${framework_full_name}Resources"
 mkdir -p "$resources_output_dir"
 
 # Copy all resource files. Since a resource file can be almost anything, we define a resource file:
@@ -360,7 +381,7 @@ if $param_copy_source_files; then
 
     # As for resources, prefixing the source folder with the framework name makes it more convenient to
     # work with Xcode
-    sources_output_dir="$framework_output_dir/${framework_name}Sources"
+    sources_output_dir="$framework_output_dir/${framework_full_name}Sources"
     mkdir -p "$sources_output_dir"
     
     # Copy all source files
