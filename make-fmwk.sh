@@ -373,6 +373,7 @@ if [ ! -z "$param_code_version" ]; then
     echo "Code version: $param_code_version" >> "$information_file"
 fi
 echo "Configuration used for compilation: $configuration_name" >> "$information_file"
+echo "iOS SDK version used: $sdk_version" >> "$information_file"
 echo "Version of make-fmwk used: $VERSION_NBR" >> "$information_file"
 echo "Date and time of creation: `date`" >> "$information_file"
 
