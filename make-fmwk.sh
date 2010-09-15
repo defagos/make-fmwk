@@ -291,7 +291,7 @@ if [ ! -f "$framework_output_dir/$framework_name.h" ]; then
     # and correctly deals with the case where no such file exists
     for precompiled_header_file in ${precompiled_header_files[@]}
     do
-        cat "$precompiled_header_file" >> "$global_header_file"
+        cat "$precompiled_header_file" | grep "#import" >> "$global_header_file"
     done
     
     # Include all public headers
