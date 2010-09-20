@@ -237,7 +237,7 @@ if [ "$?" -ne "0" ]; then
 fi
 
 # Framework directory
-framework_output_dir="$output_dir/$framework_full_name"
+framework_output_dir="$output_dir/$framework_full_name.staticframework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
