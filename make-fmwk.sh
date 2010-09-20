@@ -4,19 +4,18 @@
 VERSION_NBR=1.0
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
-EXECUTION_DIR=`pwd`                     
-# Build directory
-BUILD_DIR="$EXECUTION_DIR/build"
-# Directory where all frameworks are saved (for all possible configurations)
-FRAMEWORK_COMMON_OUTPUT_DIR="$BUILD_DIR/framework"
+EXECUTION_DIR=`pwd`
+BUILD_DIR="$EXECUTION_DIR/build"                 
 
 # Global variables
 param_code_version=""
 param_copy_source_files=false
 param_omit_version_in_name=false
+param_output_dir=""
 param_project_name=""
 param_sdk_version=""
 
+output_dir=""
 project_name=""
 sdk_version=""
 
@@ -26,8 +25,7 @@ usage() {
     echo "This script compiles and packages a static library project into a reusable"
     echo ".framework for iOS projects. The script must be launched from the directory"
     echo "containing the .xcodeproj of a static library project, and will generate"
-    echo "a .framework pseudo-bundle under the build/framework directory (along with"
-    echo "build logs)."
+    echo "a pseudo-bundle which can be easily deployed."
     echo ""
     echo ".frameworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
@@ -39,10 +37,12 @@ usage() {
     echo ""
     echo "To avoid conflicting names when merging .framework resources with other"
     echo ".framework resources or with application resources, all library resources"
-    echo "should be prefixed with the name of the .framework file."
+    echo "should be prefixed with the name of the framework. The script generates"
+    echo "warnings if this is not the case."
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t code_version]"
-    echo "                    [-n] [-s] [-v] [-h] configuration_name public_headers_file"
+    echo "                    [-o output_dir] [-n] [-s] [-v] [-h] configuration_name"
+    echo "                    public_headers_file"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -64,6 +64,8 @@ usage() {
     echo "                          to be bound to specific framework versions. If -n"
     echo "                          is used, the version number is not appended (if the"
     echo "                          -t option was not used, -n has no effect)"
+    echo "   -o                     Output directory where the pseudo-framework will be"
+    echo "                          saved. If not specified, build/framework is used"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "   -s:                    Add the complete source code to the bundle file."
@@ -88,7 +90,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:np:st:v OPT; do
+while getopts hk:no:p:st:v OPT; do
     case "$OPT" in
         h)
             usage
@@ -99,6 +101,9 @@ while getopts hk:np:st:v OPT; do
             ;;
         n)
             param_omit_version_in_name=true;
+            ;;
+        o)
+            param_output_dir="$OPTARG"
             ;;
         p) 
             param_project_name="$OPTARG"
@@ -184,9 +189,16 @@ else
     sdk_version="$param_sdk_version"
 fi
 
-# Create the main output directory for framework stuff if it does not already exist
-if [ ! -d "$FRAMEWORK_COMMON_OUTPUT_DIR" ]; then
-    mkdir -p "$FRAMEWORK_COMMON_OUTPUT_DIR"
+# Output directory
+if [ -z "$param_output_dir" ]; then
+    output_dir="$BUILD_DIR/framework"
+else
+    output_dir="$param_output_dir"
+fi
+
+# Create output directory if it does not exist
+if [ ! -d "$output_dir" ]; then
+    mkdir -p "$output_dir"
 fi
 
 # Framework name matches project name; by default the code version (if available) is appended, except
@@ -207,7 +219,7 @@ fi
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphonesimulator$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name-simulator.buildlog" 
+    &> "$output_dir/$framework_full_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     exit 1
@@ -215,7 +227,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphoneos$sdk_version" \
-    &> "$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name-device.buildlog"
+    &> "$output_dir/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     exit 1
@@ -225,7 +237,7 @@ fi
 echo "Creating framework bundle..."
 
 # Framework directory
-framework_output_dir="$FRAMEWORK_COMMON_OUTPUT_DIR/$framework_full_name.framework"
+framework_output_dir="$output_dir/$framework_full_name.framework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
