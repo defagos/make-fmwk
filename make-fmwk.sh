@@ -206,14 +206,14 @@ fi
 framework_name="$project_name"
 if [ ! -z "$param_code_version" ]; then
     if $param_omit_version_in_name; then
-        framework_full_name="$framework_name"
+        framework_full_name="$framework_name-$configuration_name"
     else
-        framework_full_name="$framework_name-$param_code_version"
+        framework_full_name="$framework_name-$param_code_version-$configuration_name"
     fi
 # Warns if no version specified (good practice)
 else
     echo "[Info] You should provide a code version for better traceability; use the -t option"
-    framework_full_name="$framework_name"
+    framework_full_name="$framework_name-$configuration_name"
 fi
 
 # Create framework
@@ -269,7 +269,7 @@ echo "Packing binaries..."
 # TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
-    -o "$dot_framework_output_dir/$framework_full_name"
+    -o "$dot_framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
@@ -312,7 +312,7 @@ if [ ! -f "$global_header_file" ]; then
     # Include all public headers
     for header_file in ${public_headers_arr[@]}
     do
-        echo "#import <$framework_full_name/$header_file>" >> "$global_header_file"
+        echo "#import <$framework_name/$header_file>" >> "$global_header_file"
     done
 # Warn if a public header with this name already exists
 else
