@@ -14,6 +14,7 @@ param_omit_version_in_name=false
 param_output_dir=""
 param_project_name=""
 param_sdk_version=""
+param_target_name=""
 
 output_dir=""
 project_name=""
@@ -40,9 +41,9 @@ usage() {
     echo "should be prefixed with the name of the framework. The script generates"
     echo "warnings if this is not the case."
     echo ""
-    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t code_version]"
-    echo "                    [-o output_dir] [-n] [-s] [-v] [-h] configuration_name"
-    echo "                    public_headers_file"
+    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t target_name]"
+    echo "                    [-u code_version] [-o output_dir] [-n] [-s] [-v] [-h]"
+    echo "                    configuration_name public_headers_file"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -68,12 +69,16 @@ usage() {
     echo "                          saved. If not specified, build/framework is used"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
+    echo "                          (without the .xcodeproj extension)"
     echo "   -s:                    Add the complete source code to the bundle file."
     echo "                          Useful for frameworks compiled with debug symbols"
     echo "                          and intended for in-house developers"
-    echo "   -t                     Tag identifying the version of the code which has"
-    echo "                          been compiled. Added to framework.info."
-    echo "   -v:                    Print the version number"
+    echo "   -t:                    Target to be used. If not specified the first target"
+    echo "                          will be built"
+    echo "   -u                     Tag identifying the version of the code which has"
+    echo "                          been compiled. Added to framework.info and appended"
+    echo "                          to the framework name if -n is not used"
+    echo "   -v:                    Print the script version number"
     echo ""
 }
 
@@ -90,7 +95,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:no:p:st:v OPT; do
+while getopts hk:no:p:st:u:v OPT; do
     case "$OPT" in
         h)
             usage
@@ -112,6 +117,9 @@ while getopts hk:no:p:st:v OPT; do
             param_copy_source_files=true
             ;;
         t)
+            param_target_name="$OPTARG"
+            ;;
+        u)
             param_code_version="$OPTARG"
             ;;
         v)
@@ -201,6 +209,11 @@ if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
 fi
 
+# Target parameter
+if [ ! -z "$param_target_name" ]; then
+    target_parameter="-target $param_target_name"
+fi
+
 # Framework name matches project name; by default the code version (if available) is appended, except
 # if this behavior is overriden (no warning, the user knows what shes is doing)
 framework_name="$project_name"
@@ -212,7 +225,7 @@ if [ ! -z "$param_code_version" ]; then
     fi
 # Warns if no version specified (good practice)
 else
-    echo "[Info] You should provide a code version for better traceability; use the -t option"
+    echo "[Info] You should provide a code version for better traceability; use the -u option"
     framework_full_name="$framework_name-$configuration_name"
 fi
 
@@ -221,16 +234,16 @@ echo "Creating framework pseudo-bundle..."
 
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphonesimulator$sdk_version" \
-    &> "$output_dir/$framework_full_name-simulator.buildlog" 
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" \
+    $target_parameter &> "$output_dir/$framework_full_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     exit 1
 fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -target "$project_name" -sdk "iphoneos$sdk_version" \
-    &> "$output_dir/$framework_full_name-device.buildlog"
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" \
+    $target_parameter &> "$output_dir/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     exit 1
