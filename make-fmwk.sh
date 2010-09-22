@@ -222,9 +222,8 @@ if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
 fi
 
-
 # Log directory (same as output directory if not specified)
-if [ -z "param_log_dir" ]; then
+if [ -z "$param_log_dir" ]; then
     log_dir="$output_dir"
 else
     log_dir="$param_log_dir"
