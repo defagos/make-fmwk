@@ -82,6 +82,12 @@ usage() {
     echo ""
 }
 
+# Set internal field separator for for loops; otherwise for loops on paths arrays won't work
+# if a path contains a space (since the default IFS contains space as well)
+# TODO: Should be more local or replaced by find -exec {}. This can have undesired global effects
+#       we should strive to avoid
+IFS=$'\n'
+
 # Checking that the name of a file, given its path, begins with a given prefix
 #   @param $1 the resource path
 #   @param $2 the prefix
