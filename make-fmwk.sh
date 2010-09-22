@@ -10,12 +10,14 @@ BUILD_DIR="$EXECUTION_DIR/build"
 # Global variables
 param_code_version=""
 param_copy_source_files=false
+param_log_dir=""
 param_omit_version_in_name=false
 param_output_dir=""
 param_project_name=""
 param_sdk_version=""
 param_target_name=""
 
+log_dir=""
 output_dir=""
 project_name=""
 sdk_version=""
@@ -42,8 +44,8 @@ usage() {
     echo "warnings if this is not the case."
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t target_name]"
-    echo "                    [-u code_version] [-o output_dir] [-n] [-s] [-v] [-h]"
-    echo "                    configuration_name public_headers_file"
+    echo "                    [-u code_version] [-o output_dir] [-l log_dir] [-n]"
+    echo "                    [-s] [-v] [-h] configuration_name public_headers_file"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -60,6 +62,8 @@ usage() {
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
     echo "                          use a specific version number, e.g. 4.0"
+    echo "   -l:                    Output directory for log files (same as -o directory"
+    echo "                          if omitted"
     echo "   -n:                    By default, if the code version is specified it is"
     echo "                          appended to the framework name. This allows projects"
     echo "                          to be bound to specific framework versions. If -n"
@@ -101,7 +105,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:no:p:st:u:v OPT; do
+while getopts hk:l:no:p:st:u:v OPT; do
     case "$OPT" in
         h)
             usage
@@ -109,6 +113,9 @@ while getopts hk:no:p:st:u:v OPT; do
             ;;
         k)
             param_sdk_version="$OPTARG"
+            ;;
+        l)
+            param_log_dir="$OPTARG"
             ;;
         n)
             param_omit_version_in_name=true;
@@ -210,9 +217,22 @@ else
     output_dir="$param_output_dir"
 fi
 
-# Create output directory if it does not exist
+# Create the output directory if it does not exist
 if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
+fi
+
+
+# Log directory (same as output directory if not specified)
+if [ -z "param_log_dir" ]; then
+    log_dir="$output_dir"
+else
+    log_dir="$param_log_dir"
+fi
+
+# Create the log directory if it does not exist
+if [ ! -d "$log_dir" ]; then
+    mkdir -p "$log_dir"
 fi
 
 # Target parameter
@@ -241,7 +261,7 @@ echo "Creating framework pseudo-bundle..."
 # Run the builds
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" \
-    $target_parameter &> "$output_dir/$framework_full_name-simulator.buildlog" 
+    $target_parameter &> "$log_dir/$framework_full_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     exit 1
@@ -249,7 +269,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" \
-    $target_parameter &> "$output_dir/$framework_full_name-device.buildlog"
+    $target_parameter &> "$log_dir/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     exit 1
