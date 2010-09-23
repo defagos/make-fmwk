@@ -12,20 +12,146 @@ no other instance than the main bundle can exist on iOS. The stems from the fact
 must contain executable code, otherwise it cannot be loaded (and therefore its resources cannot be
 accessed). Since iOS applications run in sandboxes, they are not allowed to use shared libraries,
 and therefore bundles cannot be loaded. Thus, for applications running on iOS, there is
-no way to load something like a framework, therefore no corresponding template is provided.
+no way to load something like a framework (in the Xcode sense). No corresponding template is therefore
+provided.
 
-But still one should have a way of reusing library code. Xcode provides a static library project
-template, with which static library files can be created. 
+But still one should have a way of reusing library code. And in fact there is one, since Xcode 
+provides a static library project template, with which static library files can be created. But
+working with them has some drawbacks:
+  - you can only link with one .a at once. How do you manage multiple architectures each
+    with its .a file?
+  - header files for the library must be provided separately and included into the client
+    project
+  - resources must also be provided separately
+Usually, to avoid these drawbacks, projects directly import the source code of a library
+into their own source code (either as a link, but often files are directly cloned as well). But
+this does not work well either:
+  - there is a strong likelihood that the programmer is tempted to change the library source
+    code directly within her project
+  - the number of source files to be compiled increases. Often, programmers just delete those
+    source files they are not interested in, but this is not really convenient (moreover,
+    when the library is updated, the set of source code files required may change)
+  - frameworks whose source code is private cannot be used this way
+    
+Though there is no way to build a framework around a static library using an Xcode template, it 
+is still possible to package binaries, headers and resources for easier reuse. This is just 
+what make-fmwk is made for.
 
-Usually, this is achieved by
-checking out the source code of a library before adding it as a reference to a project.
-This approach works but is not really convenient. Moreover it exposes the source code,
-which might not be desired for commercial libraries.
 
-Xcode offers a static library project,
-but different libraries have to be linked whether we target the siumlator or the device
-itself. Moreover, libraries do not pack resources, neither do they offer a way to expose
-their public interface headers in a convenient way.
+2) How the script works and why it works that way
+   ----------------------------------------------
+When a standard .framework directory (created using the Xcode template for MacOS) is added 
+to Xcode, two things happen:
+  - Xcode looks for a dynamic library file located at the root of this directory, and 
+    bearing the same name as the .framework
+  - Xcode also looks for a "Headers" directory containing the headers defining the framework
+    public interface. These can then be imported by clients using
+      #import <framework_name/header_name.h>
+More precisely, the structure of a MacOS framework is made of symbolic links and directories
+to handle various versions of a library within the same .framework directory. Refer to the
+MacOS framework programming guide for more information.
+      
+Frameworks satisfying these requirements can be added to an Xcode project with a single click.
+Such .frameworks can also embed resources since the .framework (whether it is deployed 
+system-wide or copied for private use in the application bundle) is a true NSBundle.
+
+The binary file located at the root of the .framework directory does not need to be diretctly
+executable, though. It can also be a universal binary file, created by the lipo command which
+brings together binaries compiled for different architectures. The linker then just figures
+out which .a it needs when a project is compiled, and extracts it from the universal
+binary file. Therefore, it is possible to create "fake" frameworks wrapping a static
+library. Though these frameworks are not frameworks in the Xcode sense, Xcode will happily
+deal with them and discover their content. Note that since static frameworks are not true frameworks 
+(wrapping dynamic libraries in the MacOS sense), we do not need to create the whole directory 
+structure and symbolic links needed to support different versions. Only one version will
+always be available, creating such a structure would be overkill.
+
+Based on this knowledge, the make-fwmk script creates a "static" .framework (i.e. containing a
+static library) with the internal structure expected by Xcode. Such .frameworks could then be added 
+using a simple drag and drop onto an Xcode project. But this does not deal with resources:
+As said above, static frameworks cannot be NSBundles, therefore they cannot embed resources 
+(even if we add them to a copy file target task, they will be copied into the application
+bundle but never loaded at runtime; resources packed within them will never be accessible). 
+
+To solve this problem, the .framework containing the static library is itself embedded into 
+a .staticframework directory, which contains a directory for resources (and maybe other 
+useful files we might need). This is this .staticframework file which is then added to an Xcode
+project (read further since adding a .staticframework file requires to be careful).
+
+The .staticframework being added to the project directly, the files it contains will be
+copied at the root level of the final application bundle when the application is
+assembled. In an ideal world we would have created a directory for each framework resource
+files to reside in (so that resources belonging to different libraries do not overlap), but 
+this does not work well because some methods (e.g. [UIImage imageWithName:] or [UIViewController 
+initWithNibName:bundle:] can only look at the root level of a bundle.
+
+Having all resources merged in the same bundle root directory means that we must strive to avoid 
+name conflicts. A reasonable way to minimize the probability of conflicts is to prefix each 
+resource of a library with the library name (and e.g. and underscore). The script will therefore 
+display warnings if resources do not meet this requirement when a .staticframework is assembled.
+
+The last issue to discuss is how .staticframeworks must be added to Xcode. Simply dragging and
+dropping a .staticframework into a project works, but if we want the library to remain outside 
+the project using it (which should be the case since both projects are independent), we must 
+add a reference to it, not copy its files. This means that the path which will be stored into
+the .pbxproj will depend on the machine on which the framework was added to the project. This 
+becomes a nightmare when several people (and maybe a continuous integration tool) use the 
+same project.
+
+Several solutions exist:
+  - store the reference to the .staticframework using a path relative to the project, and
+    apply a convention like "all computers should have libraries two levels higher than
+    projects in the directory hierarchy", so that relative paths are always correct
+  - after getting a project, apply a tool to fix all .staticframework paths in the .pbxproj
+  - be smarter :-)
+The first solution is ugly and dfficult to maintain. The second solution highly depends on
+the .pbxproj format and might break as it is changed. So we have no choice but to be smart.
+The goal is to only store paths relative to the project in the .pbxproj. But we cannot apply
+a convention, so those paths must point somewhere within the project directory itself. We 
+cannot copy the framework files into the project directory, the solution is theefore to store
+symbolic links instead. These symbolic links are not committed to the source code repository
+and are generated using a script (link-fmwk) just after a project has been checked out on a 
+computer. The script must only know for which frameworks it must generate symbolic links
+and where the frameworks are located on this specific machine.
+
+
+
+
+
+
+
+
+always relative to 
+symbolic links
+dealing with library updates & recompilation
+how to migrate code (NSLocalizedString, prefixing)
+
+
+
+Moreover, resources are saved by the script into the .framework but cannot be loaded, since
+the static library is inherently not loadable. But at least this collects library-related
+files in a single place.
+
+3) How to use this script and the .framework files it produces
+   -----------------------------------------------------------
+To create a framework:
+  a) Create an iOS static library project under Xcode. Add source files and resources as
+     you would for any project
+  b) Create a text file listing all header files that you want to make public
+  c) Open a terminal, switch to the 
+
+
+
+
+
+
+NB: No dead-code stripping for Obj-C -> make smaller libs
+
+
+  
+
+
+
 
 
 NB: Document: add -objC to linker flags of the client using the lib
