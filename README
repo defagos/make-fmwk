@@ -114,17 +114,57 @@ and are generated using a script (link-fmwk) just after a project has been check
 computer. The script must only know for which frameworks it must generate symbolic links
 and where the frameworks are located on this specific machine.
 
+One last important remark: In your projects, always avoid absolute paths (except if pointing
+at system directories). Use the cmd-I shortcut when a directory is selected in Xcode to check
+that a path is relative to the project (should be the default). This way anybody will be able 
+to checkout your project and use it immediately. 
+
+
+3) How to create a static framework
+   --------------------------------
+Creating a static framework is easy:
+  a) Using Xcode, create a static library project for iOS.
+  b) Add files as you normally do. You can create any physical / logical structure you want.
+     Whether you are creating a new project or migrating reusable code from an application
+     into a library:
+       - prefix all resource files (including localization files) with the name of the
+         library and an underscore
+       - init view controllers using initWithNibName:bundle: (with nil as bundle since no
+         other bundle than the main bundle can be used on iOS), not simply using init (which
+         loads a xib bearing the same name as the view controller class)
+       - when accessing localized resources, use NSLocalizedStringFromTable instead of
+         NSLocalizedString
+  c) Create a text file listing all headers building the framework public interface,
+     and which you will usually store in the project root directory
+  d) Run make-fmwk.sh from the project root directory to create the bundle. Usually you
+     should choose to put all .staticframeworks generated into a single "repository"
+     directory (use the -o option)
+     
+     
+4) How to use a static framework
+--------------------------------
+Using a static framework is also easy:
+  a) Using Xcode, create an iOS application, or open an existing one
+  b) Create a text file listing all frameworks you need, usually in the project root
+     directory
+  c) Locate where the .staticframework files you need are located, or create a
+     repository to store them (if you need to compile them, refer to 3) )
+  c) Run link-fmwk.sh from your project root directory, specifying where the
+     .staticframework repository is located on your computer. This generates symbolic
+     links in a StaticFrameworks subdirectory. If your project is stored within a source
+     code repository, add this directory to the locations to be ignored
+  d) Within Xcode, add the symbolic links, either using a drag and drop or a right-click
+     on your project explorer tree. Add them as references only, do not copy them
+  e) You can include the framework main header in your project precompiled header file,
+     or just include the headers you need where you need them (always using #import < >)
 
 
 
 
 
+update lib
+update project to use other frameworks
 
-
-always relative to 
-symbolic links
-dealing with library updates & recompilation
-how to migrate code (NSLocalizedString, prefixing)
 
 
 
