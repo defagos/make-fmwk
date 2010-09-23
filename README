@@ -142,7 +142,7 @@ Creating a static framework is easy:
      
      
 4) How to use a static framework
---------------------------------
+   -----------------------------
 Using a static framework is also easy:
   a) Using Xcode, create an iOS application, or open an existing one
   b) Create a text file listing all frameworks you need, usually in the project root
@@ -159,40 +159,34 @@ Using a static framework is also easy:
      or just include the headers you need where you need them (always using #import < >)
 
 
+5) Working on a static framework and a project using it simultaneously
+   -------------------------------------------------------------------
+Sometimes you are just updating a static framework when working on a project using it.
+After having updated the library code, you just need to run make-fwmk.sh again
+(saving the resulting .staticframework in your static framework repository by using
+the -o option). You can then simply build and link your client project again.
 
 
-
-update lib
-update project to use other frameworks
-
-
-
-
-Moreover, resources are saved by the script into the .framework but cannot be loaded, since
-the static library is inherently not loadable. But at least this collects library-related
-files in a single place.
-
-3) How to use this script and the .framework files it produces
-   -----------------------------------------------------------
-To create a framework:
-  a) Create an iOS static library project under Xcode. Add source files and resources as
-     you would for any project
-  b) Create a text file listing all header files that you want to make public
-  c) Open a terminal, switch to the 
+6) Working with static framework versions
+   --------------------------------------
+It is strongly advised to tag frameworks using the -u option. Projects using static
+frameworks can then specify which framework version they are using since (by default)
+the version number is appended to the .staticframework name. This way you ensure better
+traceability of which tagged version of a library a project was linked with.
 
 
-
-
-
-
-NB: No dead-code stripping for Obj-C -> make smaller libs
-
-
-  
-
-
-
-
-
-NB: Document: add -objC to linker flags of the client using the lib
-    http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+7) Issues
+   ------
+Two issues remain and must still be investigated:
+  a) Due to its highly dynamic nature, the linker cannot decide what needs to be linked
+     with in a library and which parts can be omitted. Therefore there is no dead-code stripping
+     for Objective-C static libraries. This means that even if you use only a small subset
+     of a library you will still link all of it. Two solutions can be considered:
+       - use a set of preprocessor flags to disable subsets of a library when compiling it
+         (this is the approach taken by Google's Objective-C libraries)
+       - break down a fat library into smaller libraries (e.g. core, networking, logging,
+         etc.)
+  b) There is an issue with categories extending objects external to the library. The -objC 
+     linker flag should be used, but I encountered some issues during my tests. I may have
+     made a mistake since I did not investigate this issue long enough:
+       http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
