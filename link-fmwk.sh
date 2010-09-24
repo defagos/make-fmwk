@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Constants
+SCRIPT_NAME=`basename $0`
 EXECUTION_DIR=`pwd`
 
 # User manual
