@@ -166,6 +166,11 @@ After having updated the library code, you just need to run make-fwmk.sh again
 (saving the resulting .staticframework in your static framework repository by using
 the -o option). You can then simply build and link your client project again.
 
+If you need to debug your library code while executing your application, you can
+use the -s option of make-fmwk to pack the source code into the static framework.
+This option should of course not be used when clients must not care about the
+library implementation (which is almost always what you want).
+
 
 6) Working with static framework versions
    --------------------------------------
@@ -190,3 +195,8 @@ Two issues remain and must still be investigated:
      linker flag should be used, but I encountered some issues during my tests. I may have
      made a mistake since I did not investigate this issue long enough:
        http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+       
+       
+8) Version history
+   ---------------
+1.0         September 2010          Initial release

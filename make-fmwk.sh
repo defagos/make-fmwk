@@ -32,7 +32,7 @@ usage() {
     echo ""
     echo ".frameworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
-    echo "process are packed into the framework itself (framework.info file)."
+    echo "process are packed into the framework itself (as a plist manifest file)."
     echo ""
     echo "The list of all headers to be made public is required. Based on this file,"
     echo "this script also generate a global framework header, e.g. to be imported in"
@@ -452,16 +452,28 @@ if $param_copy_source_files; then
     done
 fi
 
-# Add an information file
-information_file="$framework_output_dir/framework.info"
-echo "Project compiled: $project_name" >> "$information_file"
+# Add a manifest file
+manifest_file="$framework_output_dir/$framework_name-staticframework-Info.plist"
+echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
+echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
+echo "<plist version=\"1.0\">" >> "$manifest_file"
+echo "<dict>" >> "$manifest_file"
+echo "	<key>Project compiled</key>" >> "$manifest_file"
+echo "	<string>$project_name</string>" >> "$manifest_file"
 if [ ! -z "$param_code_version" ]; then
-    echo "Code version: $param_code_version" >> "$information_file"
+echo "	<key>Code version</key>" >> "$manifest_file"
+echo "	<string>$param_code_version</string>" >> "$manifest_file"
 fi
-echo "Configuration used for compilation: $configuration_name" >> "$information_file"
-echo "iOS SDK version used: $sdk_version" >> "$information_file"
-echo "Version of make-fmwk used: $VERSION_NBR" >> "$information_file"
-echo "Date and time of creation: `date`" >> "$information_file"
+echo "	<key>Configuration used</key>" >> "$manifest_file"
+echo "	<string>$configuration_name</string>" >> "$manifest_file"
+echo "	<key>iOS SDK version used</key>" >> "$manifest_file"
+echo "	<string>$sdk_version</string>" >> "$manifest_file"
+echo "	<key>make-fmwk version</key>" >> "$manifest_file"
+echo "	<string>$VERSION_NBR</string>" >> "$manifest_file"
+echo "	<key>Creation date and time</key>" >> "$manifest_file"
+echo "	<string>`date`</string>" >> "$manifest_file"
+echo "</dict>" >> "$manifest_file"
+echo "</plist>" >> "$manifest_file"
 
 # Done
 echo "Done."
