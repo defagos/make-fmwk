@@ -453,7 +453,7 @@ if $param_copy_source_files; then
 fi
 
 # Add a manifest file
-manifest_file="$framework_output_dir/$framework_name-staticframework-Info.plist"
+manifest_file="$dot_framework_output_dir/$framework_name-staticframework-Info.plist"
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
 echo "<plist version=\"1.0\">" >> "$manifest_file"
