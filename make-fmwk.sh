@@ -438,7 +438,7 @@ if $param_copy_source_files; then
     mkdir -p "$sources_output_dir"
     
     # Copy all source files
-    source_files=(`find "$EXECUTION_DIR" -name "*.m"`)
+    source_files=(`find "$EXECUTION_DIR" -name "*.m" -not -ipath "*/build/*"`)
     for source_file in ${source_files[@]}
     do
         cp "$source_file" "$sources_output_dir"
