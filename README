@@ -157,6 +157,15 @@ Using a static framework is also easy:
      on your project explorer tree. Add them as references only, do not copy them
   e) You can include the framework main header in your project precompiled header file,
      or just include the headers you need where you need them (always using #import < >)
+     
+If a static framework has been updated, you might encounter errors when compiling a project
+using it. This happens in the following cases:
+  - a resource has been added to or removed from the static framework
+  - a source file has been added to or removed from the static framework (only if the
+    source code has been packed into the framework with the -s option)
+In such cases you will need to remove the framework and add it again using the existing
+symbolic link. In all other cases where the framework has been updated, compilation
+against the new version should work flawlessly.
 
 
 5) Working on a static framework and a project using it simultaneously
@@ -170,6 +179,9 @@ If you need to debug your library code while executing your application, you can
 use the -s option of make-fmwk to pack the source code into the static framework.
 This option should of course not be used when clients must not care about the
 library implementation (which is almost always what you want).
+
+If the framework is changing fast, you might have to link it again with your project,
+see 4).
 
 
 6) Working with static framework versions
