@@ -138,7 +138,7 @@ Creating a static framework is easy:
      and which you will usually store in the project root directory
   d) Run make-fmwk.sh from the project root directory to create the bundle. Usually you
      should choose to put all .staticframeworks generated into a single "repository"
-     directory (use the -o option)
+     directory (by default ~/StaticFrameworks)
      
      
 4) How to use a static framework
@@ -148,11 +148,13 @@ Using a static framework is also easy:
   b) Create a text file listing all frameworks you need, usually in the project root
      directory
   c) Locate where the .staticframework files you need are located, or create a
-     repository to store them (if you need to compile them, refer to 3) )
-  c) Run link-fmwk.sh from your project root directory, specifying where the
-     .staticframework repository is located on your computer. This generates symbolic
-     links in a StaticFrameworks subdirectory. If your project is stored within a source
-     code repository, add this directory to the locations to be ignored
+     repository to store them (by default the same repository as make-fwmk.sh
+     will be used). If you need to compile those frameworks first, please refer to 3)
+  c) Run link-fmwk.sh from your project root directory. By default link-fmwk.sh looks under
+     the ~/StaticFrameworks directory, but you can change this behavior if needed. The 
+     script generates symbolic links in a StaticFrameworks project subdirectory. If your 
+     project is stored within a source code repository, add this directory to the locations 
+     to be ignored (SVN ignore, .gitignore, etc.)
   d) Within Xcode, add the symbolic links, either using a drag and drop or a right-click
      on your project explorer tree. Add them as references only, do not copy them
   e) You can include the framework main header in your project precompiled header file,
@@ -212,3 +214,4 @@ Two issues remain and must still be investigated:
 8) Version history
    ---------------
 1.0         September 2010          Initial release
+1.1         October 2010            Convention over configuration philosophy. Easier to use

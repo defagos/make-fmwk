@@ -1,8 +1,18 @@
 #!/bin/bash
 
 # Constants
+VERSION_NBR=1.1
 SCRIPT_NAME=`basename $0`
 EXECUTION_DIR=`pwd`
+DEFAULT_FRAMEWORK_LIST_FILE="$EXECUTION_DIR/frameworks.txt"
+DEFAULT_FRAMEWORK_REPOSITORY_DIR="$HOME/StaticFrameworks"
+
+# Global variables
+param_framework_list_file=""
+param_framework_repository_dir=""
+
+framework_list_file=""
+framework_repository_dir=""
 
 # User manual
 usage() {
@@ -18,7 +28,7 @@ usage() {
     echo "symbolic links again so that they point to the location of the frameworks on this"
     echo "machine (provided these frameworks are available, of course)."
     echo ""
-    echo "The script $SCRIPT_NAME just start from a text file listing all frameworks required"
+    echo "The script $SCRIPT_NAME just starts from a text file listing all frameworks required"
     echo "by a project, and looks for the frameworks in a directory in which all frameworks"
     echo "are expected to reside (framework repository)."
     echo ""
@@ -35,45 +45,79 @@ usage() {
     echo ""
     echo "This script must be started from a directory containing (at least) one .xcodeproj"
     echo ""
-    echo "Usage: $SCRIPT_NAME framework_list_file framework_repository output_directory"
+    echo "Usage: $SCRIPT_NAME [-f framework_list_file] [-r framework_repository] [-h] [-v]"
     echo ""
-    echo "Mandatory parameters:"
-    echo "   framework_list_file    A file containing the list of frameworks to generate"
+    echo "Options:"
+    echo "   -f                     A file containing the list of frameworks to generate"
     echo "                          links for, one per line (and without the .staticframework"
     echo "                          extension):"
     echo "                              framework1"
     echo "                              framework2"
     echo "                                 ..."
     echo "                              frameworkN"
-    echo "   framework_repository   The location where frameworks must be searched. This"
-    echo "                          script does not search directories recursively"
+    echo "                          If omitted then the script looks for a frameworks.txt"
+    echo "                          file in the project directory"    
+    echo "   -h:                    Display this documentation"
+    echo "   -r                     The location of the framework repository, ~/StaticFrameworks"
+    echo "                          if omitted. The directory is not searched recursively"
+    echo "   -v:                    Print the script version number"
     echo ""
 }
 
-# Check mandatory parameters
-if [ -z "$1" ]; then
-    echo "[Error] A framework list file is required"
-    usage
-    exit 1
-fi
-framework_list_file="$1"
+# Processing command-line parameters
+while getopts f:hr:v OPT; do
+    case "$OPT" in
+        f)
+            param_framework_list_file="$OPTARG"
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        r)
+            param_framework_repository_dir="$OPTARG"
+            ;;
+        v)
+            echo "$SCRIPT_NAME version $VERSION_NBR"
+            exit 0
+            ;;
+        \?)
+            usage
+            exit 1
+            ;;
+    esac
+done
 
-if [ -z "$2" ]; then
-    echo "[Error] A framework repository is required"
+# Read the remaining mandatory parameters (none)
+shift `expr $OPTIND - 1`
+for arg in "$@"; do
     usage
     exit 1
+done
+
+# Framework list file
+if [ -z "$param_framework_list_file" ]; then
+    framework_list_file="$DEFAULT_FRAMEWORK_LIST_FILE"
+else
+    framework_list_file="$param_framework_list_file"
 fi
-framework_repository_dir="$2"
+
+# Framework repository
+if [ -z "$param_framework_repository_dir" ]; then
+    framework_repository_dir="$DEFAULT_FRAMEWORK_REPOSITORY_DIR"
+else
+    framework_repository_dir="$param_framework_repository_dir"
+fi
 
 # Check that the framework list file exists
 if [ ! -f "$framework_list_file" ]; then
-    echo "[Error] The specified framework list file does not exist"
+    echo "[Error] The framework list file $framework_list_file does not exist"
     exit 1
 fi
 
 # Check that the framework repository exists
 if [ ! -d "$framework_repository_dir" ]; then
-    echo "[Error] The specified framework repository does not exist"
+    echo "[Error] The framework repository $framework_repository_dir does not exist"
     exit 1
 fi
 
