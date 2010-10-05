@@ -5,7 +5,8 @@ VERSION_NBR=1.1
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`
-BUILD_DIR="$EXECUTION_DIR/build"   
+BUILD_DIR="$EXECUTION_DIR/build"
+DEFAULT_OUTPUT_DIR="$HOME/StaticFrameworks"
 DEFAULT_PUBLIC_HEADERS_FILE="$EXECUTION_DIR/publicHeaders.txt"              
 
 # Global variables
@@ -28,22 +29,27 @@ sdk_version=""
 usage() {
     echo ""
     echo "This script compiles and packages a static library project into a reusable"
-    echo ".framework for iOS projects. The script must be launched from the directory"
+    echo ".staticframework for iOS projects. The script must be launched from the directory"
     echo "containing the .xcodeproj of a static library project, and will generate"
     echo "a pseudo-bundle which can be easily deployed."
     echo ""
-    echo ".frameworks are built on a per-configuration basis since a universal binary"
+    echo ".staticframeworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
     echo "process are packed into the framework itself (as a plist manifest file)."
     echo ""
-    echo "The list of all headers to be made public is required. Based on this file,"
-    echo "this script also generate a global framework header, e.g. to be imported in"
+    echo "A file listing all headers to be made public is required. Based on this file,"
+    echo "this script also generate a global framework header, usually imported in"
     echo "precompiled header files."
     echo ""
-    echo "To avoid conflicting names when merging .framework resources with other"
-    echo ".framework resources or with application resources, all library resources"
+    echo "To avoid conflicting names when merging framework resources with other"
+    echo "framework resources or with application resources, all resource files"
     echo "should be prefixed with the name of the framework. The script generates"
     echo "warnings if this is not the case."
+    echo ""
+    echo "By default the generated .staticframework file is saved under a common"
+    echo " ~/StaticFrameworks directory acting as a framework repository. You can"
+    echo "still change the output directory using the -o option. Other build products"
+    echo "are still saved under the build directory."
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
@@ -66,15 +72,15 @@ usage() {
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
     echo "                          use a specific version number, e.g. 4.0"
-    echo "   -l:                    Output directory for log files (same as -o directory"
-    echo "                          if omitted"
+    echo "   -l:                    Output directory for log files (build directory"
+    echo "                          if omitted)"
     echo "   -n:                    By default, if the code version is specified it is"
     echo "                          appended to the framework name. This allows projects"
     echo "                          to be bound to specific framework versions. If -n"
     echo "                          is used, the version number is not appended (if the"
     echo "                          -t option was not used, -n has no effect)"
-    echo "   -o                     Output directory where the pseudo-framework will be"
-    echo "                          saved. If not specified, build/framework is used"
+    echo "   -o                     Output directory where the .staticframework will be"
+    echo "                          saved. If not specified, ~/Libraries is used"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "                          (without the .xcodeproj extension)"
@@ -224,7 +230,7 @@ fi
 
 # Output directory
 if [ -z "$param_output_dir" ]; then
-    output_dir="$BUILD_DIR/framework"
+    output_dir="$DEFAULT_OUTPUT_DIR"
 else
     output_dir="$param_output_dir"
 fi
@@ -234,9 +240,9 @@ if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
 fi
 
-# Log directory (same as output directory if not specified)
+# Log directory (same as build directory if not specified)
 if [ -z "$param_log_dir" ]; then
-    log_dir="$output_dir"
+    log_dir="$BUILD_DIR"
 else
     log_dir="$param_log_dir"
 fi
@@ -402,7 +408,7 @@ resource_files=(`find "$EXECUTION_DIR" \
     -not -iname "*.m" \
     -not -iname "*.h" \
     -not -iname "*.pch" \
-    -not -iname "$public_headers_file"`)
+    -not -ipath "$public_headers_file"`)
 for resource_file in ${resource_files[@]}
 do
     cp "$resource_file" "$resources_output_dir" &> /dev/null
