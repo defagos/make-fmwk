@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Constants
-VERSION_NBR=1.0.1
+VERSION_NBR=1.1
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`
-BUILD_DIR="$EXECUTION_DIR/build"                 
+BUILD_DIR="$EXECUTION_DIR/build"   
+DEFAULT_PUBLIC_HEADERS_FILE="$EXECUTION_DIR/publicHeaders.txt"              
 
 # Global variables
 param_code_version=""
@@ -14,6 +15,7 @@ param_log_dir=""
 param_omit_version_in_name=false
 param_output_dir=""
 param_project_name=""
+param_public_headers_file=""
 param_sdk_version=""
 param_target_name=""
 
@@ -43,21 +45,23 @@ usage() {
     echo "should be prefixed with the name of the framework. The script generates"
     echo "warnings if this is not the case."
     echo ""
-    echo "Usage: $SCRIPT_NAME [-p project_name] [-k sdk_version] [-t target_name]"
-    echo "                    [-u code_version] [-o output_dir] [-l log_dir] [-n]"
-    echo "                    [-s] [-v] [-h] configuration_name public_headers_file"
+    echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
+    echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
+    echo "         [-n] [-s] [-v] [-h] configuration_name"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
-    echo "   public_headers_file    A file containing the list of headers used to"
+    echo ""
+    echo "Options:"
+    echo "   -f:                    A file containing the list of headers used to"
     echo "                          create the framework public interface, one per"
     echo "                          line:"
     echo "                              header1.h"
     echo "                              header2.h"
     echo "                                 ..."
     echo "                              headerN.h"
-    echo ""
-    echo "Options:"
+    echo "                          If omitted, the script looks for a file named"
+    echo "                          publicHeaders.txt in the project directory"
     echo "   -h:                    Display this documentation"
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
@@ -105,8 +109,11 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts hk:l:no:p:st:u:v OPT; do
+while getopts f:hk:l:no:p:st:u:v OPT; do
     case "$OPT" in
+        f)
+            param_public_headers_file="$OPTARG"
+            ;;
         h)
             usage
             exit 0
@@ -151,8 +158,6 @@ shift `expr $OPTIND - 1`
 for arg in "$@"; do
     if [ -z "$configuration_name" ]; then
         configuration_name="$arg"
-    elif [ -z "$public_headers_file" ]; then
-        public_headers_file="$arg"
     else
        usage
        exit 1
@@ -160,9 +165,16 @@ for arg in "$@"; do
 done
 
 # If the last argument is not filled, incomplete command line
-if [ -z "$public_headers_file" ]; then
+if [ -z "$configuration_name" ]; then
     usage
     exit 1
+fi
+
+# Public headers file
+if [ -z "$param_public_headers_file" ]; then
+    public_headers_file="$DEFAULT_PUBLIC_HEADERS_FILE"
+else
+    public_headers_file="$param_public_headers_file"
 fi
 
 # Check that the public header file exists
