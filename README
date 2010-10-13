@@ -209,9 +209,19 @@ Two issues remain and must still be investigated:
      linker flag should be used, but I encountered some issues during my tests. I may have
      made a mistake since I did not investigate this issue long enough:
        http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+ 
+
+8) Troubleshooting
+   ---------------
+a)   'I got an “Unknown class <class> in Interface Builder file" error at runtime, my code does
+     not crash but does not work as expected'
+   You have created your .staticframeworks with source files (-s)  and added a new class you try to
+   reference in a xib of your client project. As said in section 4), remove the framework and add it 
+   again so that the Sources directory contains all framework sources. Build and run your client
+   project again.
        
        
-8) Version history
+9) Version history
    ---------------
 1.0         September 2010          Initial release
 1.1         October 2010            Convention over configuration philosophy. Easier to use
