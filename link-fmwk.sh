@@ -23,10 +23,11 @@ usage() {
     echo "By storing symbolic links to static frameworks into the project directory (the one"
     echo "containing the .xcodeproj) and by adding those links to the project instead of the"
     echo "frameworks directly, one can namely eliminate system-dependent framework paths from"
-    echo "the .pbxproj, making it universal"
-    echo "On any computer on which the project is deployed, it then suffices to generate the"
-    echo "symbolic links again so that they point to the location of the frameworks on this"
-    echo "machine (provided these frameworks are available, of course)."
+    echo "the .pbxproj, making it universal."
+    echo "On any computer on which a project using static frameworks is deployed, it then"
+    echo "suffices to generate the symbolic links again so that they point to the location"
+    echo "of the frameworks on this machine (provided these frameworks are available, of"
+    echo "course)."
     echo ""
     echo "The script $SCRIPT_NAME just starts from a text file listing all frameworks required"
     echo "by a project, and looks for the frameworks in a directory in which all frameworks"
@@ -43,7 +44,10 @@ usage() {
     echo "StaticFrameworks rooted in the project main directory. The file listing all "
     echo "frameworks required by the project therefore best resides next to the .xcodeproj."
     echo ""
-    echo "This script must be started from a directory containing (at least) one .xcodeproj"
+    echo "This script must be started from a directory containing (at least) one .xcodeproj."
+    echo "It also cleans up dead the static framework symbolic paths still referenced in the"
+    echo ".pbxproj. When switching to Xcode after having executed this script, be sure to"
+    echo "choose 'Read from disk' if Xcode has detected a .pbxproj modification."
     echo ""
     echo "Usage: $SCRIPT_NAME [-f framework_list_file] [-r framework_repository] [-h] [-v]"
     echo ""
@@ -136,6 +140,8 @@ if [ -d "$output_dir" ]; then
     rm -rf "$output_dir"
 fi
 
+echo "Creating static framework symbolic links..."
+
 # Create the output directory
 mkdir -p "$output_dir"
 
@@ -154,3 +160,45 @@ do
     # directory it points at)
     ln -s "$framework_file_path" "$output_dir"
 done
+
+# Fixes an Xcode bug: Even if a framework is removed, its path remains stored in the .pbxproj
+# file. If the path is not valid (and it won't be when we remove a framework) a warning will
+# be displayed when compiling the client project. To avoid this issue we clean up unused
+# framework paths if any, and in all available .pbxproj files
+echo "Cleaning up dead static framework links in project files..."
+pbxproj_files_arr=(`ls -1 *.xcodeproj/project.pbxproj`)
+for pbxproj_file in ${pbxproj_files_arr[@]}
+do
+    # Locate framework paths in this project file
+    pbxproj_frameworks=`cat "$pbxproj_file" | grep "/StaticFrameworks/"`
+    
+    # Identify bad links
+    for pbxproj_framework in ${pbxproj_frameworks[@]}
+    do
+        # Assume bad link until proven to be good
+        bad_link=true
+        for framework_file in ${framework_files_arr[@]}
+        do
+            echo "$pbxproj_framework" | grep "$framework_file" > /dev/null
+            # Good link
+            if [ "$?" -eq "0" ]; then
+                bad_link=false
+                break
+            fi
+        done
+        
+        # Bad link
+        if $bad_link; then
+            # Extract framework name
+            bad_framework_name=`echo "$pbxproj_framework" | sed -E 's/.*StaticFrameworks\/(.*)\.staticframework.*/\1/g'`
+            
+            # Remove corresponding entry from .pbxproj
+            cat "$pbxproj_file" | grep -v "$bad_framework_name" > "link_fmwk_temp_pbxproj_file"
+            cat "link_fmwk_temp_pbxproj_file" > "$pbxproj_file"
+            rm "link_fmwk_temp_pbxproj_file"
+        fi
+    done
+done
+
+# Done
+echo "Done."

@@ -175,6 +175,13 @@ framework and add it again using the existing symbolic link.
 In all other cases where the framework has been updated, compilation against the new version 
 should work flawlessly.
 
+Remark:
+-------
+When removing a framework, a dangling link is left in the .pbxproj file and yields
+warnings when compiling the project. To avoid this issue (and to avoid having to manually
+fix the .pbxproj file), the link-fmwk.sh script takes care of cleaning up dead link
+for you.
+
 
 5) Working on a static framework and a project using it simultaneously
    -------------------------------------------------------------------

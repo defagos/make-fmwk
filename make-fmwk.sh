@@ -615,7 +615,7 @@ echo "	<string>`date`</string>" >> "$manifest_file"
 if [ -d "./StaticFrameworks" ]; then
     echo "  <key>Static framework dependencies</key>" >> "$manifest_file"
     echo "  <array>" >> "$manifest_file"
-    static_framework_dependencies=(`ls "./StaticFrameworks"`)
+    static_framework_dependencies=(`ls -1 "./StaticFrameworks"`)
     for static_framework_dependency in ${static_framework_dependencies[@]}
     do
         echo "    <string>$static_framework_dependency</string>" >> "$manifest_file"
