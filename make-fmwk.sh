@@ -11,7 +11,7 @@ DEFAULT_PUBLIC_HEADERS_FILE="$EXECUTION_DIR/publicHeaders.txt"
 
 # Global variables
 param_code_version=""
-param_copy_source_files=false
+param_source_files_only=false
 param_log_dir=""
 param_omit_version_in_name=false
 param_output_dir=""
@@ -84,9 +84,8 @@ usage() {
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "                          (without the .xcodeproj extension)"
-    echo "   -s:                    Add the complete source code to the bundle file."
-    echo "                          Useful for frameworks compiled with debug symbols"
-    echo "                          and intended for in-house developers"
+    echo "   -s:                    Bundle the complete source code instead of the library "
+    echo "                          binary file. Useful for debugging purposes"
     echo "   -t:                    Target to be used. If not specified the first target"
     echo "                          will be built"
     echo "   -u                     Tag identifying the version of the code which has"
@@ -140,7 +139,7 @@ while getopts f:hk:l:no:p:st:u:v OPT; do
             param_project_name="$OPTARG"
             ;;
         s)
-            param_copy_source_files=true
+            param_source_files_only=true
             ;;
         t)
             param_target_name="$OPTARG"
@@ -321,11 +320,14 @@ mkdir -p "$headers_output_dir"
 
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
-echo "Packing binaries..."
-# TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
-lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
-    "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
-    -o "$dot_framework_output_dir/$framework_name"
+# If source code only, does not pack binary files
+if ! $param_source_files_only; then
+    echo "Packing binaries..."
+    # TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
+    lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
+        "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
+        -o "$dot_framework_output_dir/$framework_name"
+fi
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
@@ -446,8 +448,8 @@ do
     fi
 done
 
-# Copy sources if desired (useful when compiled with debugging information)
-if $param_copy_source_files; then
+# Copy only sources if desired (useful for debugging purposes)
+if $param_source_files_only; then
     echo "Copying source code..."
 
     # As for resources, prefixing the source folder with the framework name makes it more convenient to
