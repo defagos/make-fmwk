@@ -589,6 +589,7 @@ if $param_source_files_only; then
 fi
 
 # Add a manifest file
+echo "Creating manifest file..."
 manifest_file="$dot_framework_output_dir/$framework_name-staticframework-Info.plist"
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
@@ -597,8 +598,8 @@ echo "<dict>" >> "$manifest_file"
 echo "	<key>Project compiled</key>" >> "$manifest_file"
 echo "	<string>$project_name</string>" >> "$manifest_file"
 if [ ! -z "$param_code_version" ]; then
-echo "	<key>Code version</key>" >> "$manifest_file"
-echo "	<string>$param_code_version</string>" >> "$manifest_file"
+    echo "	<key>Code version</key>" >> "$manifest_file"
+    echo "	<string>$param_code_version</string>" >> "$manifest_file"
 fi
 echo "	<key>Configuration used</key>" >> "$manifest_file"
 echo "	<string>$configuration_name</string>" >> "$manifest_file"
@@ -608,6 +609,20 @@ echo "	<key>make-fmwk version</key>" >> "$manifest_file"
 echo "	<string>$VERSION_NBR</string>" >> "$manifest_file"
 echo "	<key>Creation date and time</key>" >> "$manifest_file"
 echo "	<string>`date`</string>" >> "$manifest_file"
+
+# List all framework dependencies; those are created before running make_fmwk.sh by using the link_fmwk.sh script. The generated
+# symbolic links are always saved under ./StaticFrameworks
+if [ -d "./StaticFrameworks" ]; then
+    echo "  <key>Static framework dependencies</key>" >> "$manifest_file"
+    echo "  <array>" >> "$manifest_file"
+    static_framework_dependencies=(`ls "./StaticFrameworks"`)
+    for static_framework_dependency in ${static_framework_dependencies[@]}
+    do
+        echo "    <string>$static_framework_dependency</string>" >> "$manifest_file"
+    done
+    echo "  </array>" >> "$manifest_file"
+fi
+
 echo "</dict>" >> "$manifest_file"
 echo "</plist>" >> "$manifest_file"
 

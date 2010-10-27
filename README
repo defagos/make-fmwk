@@ -282,3 +282,5 @@ a)   'I get an “Unknown class <class> in Interface Builder file" error in the 
    ---------------
 1.0         September 2010          Initial release
 1.1         October 2010            Convention over configuration philosophy. Easier to use
+1.2         October 2010            Ability to force link for specific files. Other minor
+                                    improvements
