@@ -4,6 +4,7 @@
 Written by Samuel Défago, inspired by Pete Goodliffe's article published on accu.org:
    http://accu.org/index.php/articles/1594
    
+   
 1) Introduction
    ------------
 Xcode offers a framework creation project template for MacOS applications, but no such template
@@ -108,7 +109,7 @@ The first solution is ugly and dfficult to maintain. The second solution highly 
 the .pbxproj format and might break as it is changed. So we have no choice but to be smart.
 The goal is to only store paths relative to the project in the .pbxproj. But we cannot apply
 a convention, so those paths must point somewhere within the project directory itself. We 
-cannot copy the framework files into the project directory, the solution is theefore to store
+cannot copy the framework files into the project directory, the solution is therefore to store
 symbolic links instead. These symbolic links are not committed to the source code repository
 and are generated using a script (link-fmwk) just after a project has been checked out on a 
 computer. The script must only know for which frameworks it must generate symbolic links
@@ -139,6 +140,8 @@ Creating a static framework is easy:
   d) Run make-fmwk.sh from the project root directory to create the bundle. Usually you
      should choose to put all .staticframeworks generated into a single "repository"
      directory (by default ~/StaticFrameworks)
+In some cases additional measures are needed to be able to link against the static
+framework, see section 7).
      
      
 4) How to use a static framework
@@ -165,25 +168,25 @@ using it. This happens in the following cases:
   - a resource has been added to or removed from the static framework
   - a source file has been added to or removed from the static framework (only if the
     source code has been packed into the framework with the -s option)
-In such cases you will need to remove the framework and add it again using the existing
-symbolic link. In all other cases where the framework has been updated, compilation
-against the new version should work flawlessly.
+In both cases the result is that the project tree in Xcode is not in sync anymore. If files
+have disappeared your project will not compile anymore, if new files have been added your
+project will compile but probably not link. To fix the project tree, simply remove the
+framework and add it again using the existing symbolic link.
+In all other cases where the framework has been updated, compilation against the new version 
+should work flawlessly.
 
 
 5) Working on a static framework and a project using it simultaneously
    -------------------------------------------------------------------
 Sometimes you are just updating a static framework when working on a project using it.
 After having updated the library code, you just need to run make-fwmk.sh again
-(saving the resulting .staticframework in your static framework repository by using
-the -o option). You can then simply build and link your client project again.
+before compiling your project again.
 
 If you need to debug your library code while executing your application, you can
 use the -s option of make-fmwk to pack the source code into the static framework.
-This option should of course not be used when clients must not care about the
-library implementation (which is almost always what you want).
-
-If the framework is changing fast, you might have to link it again with your project,
-see 4).
+In this case the binaries are not copied into the static framework (those are useless
+since Xcode uses the source code instead of the library if both are available). This 
+option should of course only be used for in-house development.
 
 
 6) Working with static framework versions
@@ -194,33 +197,87 @@ the version number is appended to the .staticframework name. This way you ensure
 traceability of which tagged version of a library a project was linked with.
 
 
-7) Issues
-   ------
-Two issues remain and must still be investigated:
-  a) Due to its highly dynamic nature, the linker cannot decide what needs to be linked
-     with in a library and which parts can be omitted. Therefore there is no dead-code stripping
-     for Objective-C static libraries. This means that even if you use only a small subset
-     of a library you will still link all of it. Two solutions can be considered:
-       - use a set of preprocessor flags to disable subsets of a library when compiling it
-         (this is the approach taken by Google's Objective-C libraries)
-       - break down a fat library into smaller libraries (e.g. core, networking, logging,
-         etc.)
-  b) There is an issue with categories extending objects external to the library. The -objC 
-     linker flag should be used, but I encountered some issues during my tests. I may have
-     made a mistake since I did not investigate this issue long enough:
-       http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+7) Linkage considerations
+   ----------------------
+Due to the highly dynamic nature of the Objective-C language, any method defined in
+a library might be called, explicitly or in hidden ways (e.g. by using objc_msgSend).
+Unlike C / C++, we would therefore expect the linker not to perform any dead-code
+stripping for Objective-C static libraries. In some cases, though, the linker still
+drops code it considers to be unused. Such code can still be referenced from an
+application, though, and I ran into the following issues:
+  a) Categories defined for objects not in the library: If such categories are defined
+     "alone" in a source file, the linker will not load the corresponding code,
+     and you will get an "Unrecognized selector" exception at runtime. This problem
+     can also arise even if the category is not alone, provided the linker has no
+     other reason to link with the object file it is contained in.
+     For more information, refer to the following article:
+        http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+  b) When using library objects in Interface Builder, you might get an "Unknown class
+     <class> in Interface Builder file" error in the console at runtime. If the library
+     class inherits from an existing UIKit class, your application will not crash, but
+     you will not get the new functionality your class implements, leading to incorrect
+     behavior.
+The article mentioned above gives a solution to this problem: Double-click your client
+application target under Xcode, and add the -ObjC flag to the "Other linker flags"
+setting (Remark: this setting also exists when double-clicking on your project under
+Xcode, but it only works when set on a target). For categories the -all_load flag must 
+also be added, as explained in the article.
+
+Adding linker flags works but is far from being optimal, though:
+  - it leads to unnecessarily larger executable sizes
+  - it affects all libraries which a client application is linked against
+  - it has to be set manually for each client project
+  - it has to be documented when you distribute a library, and you can expect users
+    to forget or not set these flags correctly. Moreover, users can easily set
+    parameters incorrectly for some but not all of their targets, which can lead to
+    unpleasant debugging nights
+As discussed above, failure to set the linker flags properly will lead to crashes (if
+you are lucky) or to incorrect behaviors difficult to debug. It would therefore be nice
+if linking could be forced by the library itself without any additional client
+project configuration.
+     
+There is a solution: Fooling the linker into thinking an object file must be loaded
+when linking. This is made possible by the fact that if the linker requires something
+into a file, it will link all of it, even if the code in the remaining of the file
+is not directly required. And since it suffices to call a method (even if this method is 
+never actually itself called!) to force linking of the object file it resides in, the
+solution is to add code which will be always called to each file which must always
+be taken into account when linking.
+
+To achieve this result, this script proceeds as follows:
+  a) The script reads a file as input (bootstrap.txt by default), which lists all source 
+     files for which linking must be forced.
+  b) Each of these source files is then appended a dummy class (whose name comprises the name
+     of the file to avoid clashes). Both the definitions and the declarations are added
+     to the source files in order to avoid additional header files. A backup of the original 
+     source file is made, and the dummy class is appended to the end of the file so that
+     the original file numbers are kept intact. The dummy class itself does nothing more 
+     than expose an empty class method.
+  c) The library is compiled with the modified source code files, then the original files 
+     are restored.
+  d) A bootstrap source file is created, which repeats the dummy class definitions (since
+     we have no header files for them; class definition consistency is no issue here since
+     we control the whole process). A dummy function is added to call the class method for 
+     all dummy classes. This file is saved into the static framework package as is.
+When a static framework is then added to a project, the bootstrap code gets compiled as
+well (thus the term "bootstrap" I introduced). Even if the dummy function it contains 
+is not used, the linker will happily load all dummy classes since their class method is 
+called, which effectively loads the modules they reside in, yielding the desire effect.
  
 
 8) Troubleshooting
    ---------------
-a)   'I got an “Unknown class <class> in Interface Builder file" error at runtime, my code does
-     not crash but does not work as expected'
-   You have created your .staticframeworks with source files (-s)  and added a new class you try to
-   reference in a xib of your client project. As said in section 4), remove the framework and add it 
-   again so that the Sources directory contains all framework sources. Build and run your client
-   project again.
-       
-       
+a)   'I get an “Unknown class <class> in Interface Builder file" error in the console at runtime'
+       or
+     'I get a "selector not recognized" exception when calling a category method stemming from a
+     static library'
+   If your static framework contains the source code, you probably have updated your project
+   and you need to remove / add the framework again, see section 4). If your static framework
+   is a binary release, some files require forced linkage. If you have access to the framework
+   code, update the boostrap definitions and build the framework again. Otherwise add the -ObjC
+   (and maybe -all_load) flag to your project target(s) and start the build again.
+   
+          
 9) Version history
    ---------------
 1.0         September 2010          Initial release
