@@ -193,7 +193,7 @@ do
             bad_framework_name=`echo "$pbxproj_framework" | sed -E 's/.*StaticFrameworks\/(.*)\.staticframework.*/\1/g'`
             
             # Remove corresponding entry from .pbxproj
-            cat "$pbxproj_file" | grep -v "$bad_framework_name" > "link_fmwk_temp_pbxproj_file"
+            cat "$pbxproj_file" | grep -v "/StaticFrameworks/$bad_framework_name" > "link_fmwk_temp_pbxproj_file"
             cat "link_fmwk_temp_pbxproj_file" > "$pbxproj_file"
             rm "link_fmwk_temp_pbxproj_file"
         fi
