@@ -303,3 +303,6 @@ pom.xml-like configuration file with everything properly setup (version, reposit
 It would definitely make sense to use Maven (and we could then benefit from artifact repositories
 as well), but I don't know if it would be hard to achieve or not. This remains to be investigated.
 
+This single pom.xml-like file should also be used to flag files which must not be copied as
+resources into the framework (e.g. readme files, compilation scripts, etc.). Currently this
+is not possible, any file which is not source code will be copied into the Resources folder.
