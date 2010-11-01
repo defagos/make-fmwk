@@ -41,6 +41,11 @@
     self.simpleViewController = [[[SimpleViewController alloc] init] autorelease];
 	[self.window addSubview:self.simpleViewController.view];
     
+    // Use a category from the library; this crashes if bootstrapping has not been enabled for this class when the library
+    // was built
+    NSString *message = [@"Hello World!" prettyString];
+    NSLog(@"%@", message);
+    
     [self.window makeKeyAndVisible];
 	return YES;
 }

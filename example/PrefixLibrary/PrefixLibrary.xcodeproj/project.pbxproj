@@ -11,6 +11,8 @@
 		6F2A93ED123D18B500A97F21 /* SimpleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2A93EB123D18B500A97F21 /* SimpleViewController.m */; };
 		6FD8D7F3127F26BF003ADBAF /* CustomLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = 6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */; };
 		6FD8D7F4127F26BF003ADBAF /* CustomLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */; };
+		6FEFEBA0127F366800B01B7A /* PrettyString.h in Headers */ = {isa = PBXBuildFile; fileRef = 6FEFEB9E127F366800B01B7A /* PrettyString.h */; };
+		6FEFEBA1127F366800B01B7A /* PrettyString.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FEFEB9F127F366800B01B7A /* PrettyString.m */; };
 		AA747D9F0F9514B9006C5449 /* PrefixLibrary_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* PrefixLibrary_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -23,6 +25,8 @@
 		6F2A93FA123D1DFA00A97F21 /* PrefixLibrary_SimpleViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PrefixLibrary_SimpleViewController.xib; sourceTree = "<group>"; };
 		6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomLabel.h; sourceTree = "<group>"; };
 		6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomLabel.m; sourceTree = "<group>"; };
+		6FEFEB9E127F366800B01B7A /* PrettyString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrettyString.h; sourceTree = "<group>"; };
+		6FEFEB9F127F366800B01B7A /* PrettyString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PrettyString.m; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* PrefixLibrary_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixLibrary_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libPrefixLibrary.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPrefixLibrary.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +79,8 @@
 				6F2A93EB123D18B500A97F21 /* SimpleViewController.m */,
 				6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */,
 				6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */,
+				6FEFEB9E127F366800B01B7A /* PrettyString.h */,
+				6FEFEB9F127F366800B01B7A /* PrettyString.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -107,6 +113,7 @@
 				AA747D9F0F9514B9006C5449 /* PrefixLibrary_Prefix.pch in Headers */,
 				6F2A93EC123D18B500A97F21 /* SimpleViewController.h in Headers */,
 				6FD8D7F3127F26BF003ADBAF /* CustomLabel.h in Headers */,
+				6FEFEBA0127F366800B01B7A /* PrettyString.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -163,6 +170,7 @@
 			files = (
 				6F2A93ED123D18B500A97F21 /* SimpleViewController.m in Sources */,
 				6FD8D7F4127F26BF003ADBAF /* CustomLabel.m in Sources */,
+				6FEFEBA1127F366800B01B7A /* PrettyString.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
