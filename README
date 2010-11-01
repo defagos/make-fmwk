@@ -306,3 +306,7 @@ as well), but I don't know if it would be hard to achieve or not. This remains t
 This single pom.xml-like file should also be used to flag files which must not be copied as
 resources into the framework (e.g. readme files, compilation scripts, etc.). Currently this
 is not possible, any file which is not source code will be copied into the Resources folder.
+
+Some projects alter the default output directory for binary products (e.g. CorePlot), which means
+that the lipo command call fails (the script assumes a specific directory name and cannot find
+the binaries). Fix.
