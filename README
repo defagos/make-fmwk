@@ -310,3 +310,24 @@ is not possible, any file which is not source code will be copied into the Resou
 Some projects alter the default output directory for binary products (e.g. CorePlot), which means
 that the lipo command call fails (the script assumes a specific directory name and cannot find
 the binaries). Fix.
+
+
+11) Example
+    -------
+This script is supplied with an example of a library (PrefixLibrary) for use by a client application
+(PrefixClientApp). This example conforms to the prefix convention for resources (thus its name)
+and shows how public headers are defined, how resources are accessed (localized strings, xib files
+and images) and how linkage can be forced for a category and a UILabel subclass.
+
+To compile the library using the Release configuration, the one expected by the PrefixClientApp
+project, open a terminal in the PrefixLibrary directory, and enter
+   /path/to/the/script/make-fmwk.sh Release
+This saves the .staticframework package into the default ~/StaticFrameworks repository. Feel free
+to experiment with script parameters if you want.
+
+To compile the client application, you must first create the symbolic links pointing to the PrefixLibrary
+static framework. Switch to the PrefixClientApp folder, and enter
+   /path/to/the/script/link-fmwk.sh
+This generates a StaticFrameworks directory into the PrefixClientApp directory.
+
+Then open the PrefixClientApp project using Xcode. Compile and run, you are done!

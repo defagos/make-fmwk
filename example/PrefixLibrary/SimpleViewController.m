@@ -14,9 +14,9 @@
 
 - (id)init
 {
-    // Bundle is nil, i.e. main bundle. The PrefixLibrary framework is designed in such a way that its use
-    // requires the client to merge its resources into the main bundle. To avoid name conflicts we add a 
-    // prefix to all framework resources
+    // Bundle is here nil, i.e. the main bundle (the only one we can access on iOS). To avoid name
+    // conflicts when framework resources are merged with application resources (and maybe resources
+    // stemming from other frameworks), resources are prefixed with the library name.
     if (self = [super initWithNibName:@"PrefixLibrary_SimpleViewController" bundle:nil]) {
         
     }
@@ -34,10 +34,8 @@
 
 - (void)viewDidLoad
 {
-    // As for any resources of the PrefixLibrary framework, localization files end up merged into the main
-    // bundle. We must use a separate localization file with a prefix for avoiding conflicts with the usual
-    // Localizable.strings file we can probably expect client applications to use. This of course means
-    // that we must use the appropriate macro for getting the localized string.
+    // Localization files are resources and must be prefixed (see above). This of course means that we must 
+    // use the appropriate macro for getting the localized string.
     self.label.text = NSLocalizedStringFromTable(@"HelloWorld", @"PrefixLibrary_Localizable", @"Hello, World!");
     
     // As for any resource files, images must bear the framework prefix as well
