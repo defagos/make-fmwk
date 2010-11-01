@@ -269,6 +269,12 @@ well (thus the term "bootstrap" I introduced). Even if the dummy function it con
 is not used, the linker will happily load all dummy classes since their class method is 
 called, which effectively loads the modules they reside in, yielding the desire effect.
  
+Remark:
+When the source code is bundled into the .staticframework, no bootstrapping is needed. Since
+the whole source code is available, the linking will not be as aggressive as it is when
+linking to a static library. In such cases the bootstrapping file will be ignored, even if
+provided.
+ 
 
 8) Troubleshooting
    ---------------
