@@ -189,10 +189,8 @@ Sometimes you are just updating a static framework when working on a project usi
 After having updated the library code, you just need to run make-fwmk.sh again
 before compiling your project again.
 
-If you need to debug your library code while executing your application, you can
-use the -s option of make-fmwk to pack the source code into the static framework.
-In this case the binaries are not copied into the static framework (those are useless
-since Xcode uses the source code instead of the library if both are available). This 
+If you need to debug your library code while executing your application, you can use
+the -s option of make-fmwk to pack the source code into the static framework. This 
 option should of course only be used for in-house development.
 
 
@@ -279,8 +277,8 @@ a)   'I get an “Unknown class <class> in Interface Builder file" error in the 
      'I get a "selector not recognized" exception when calling a category method stemming from a
      static library'
    If your static framework contains the source code, you probably have updated your project
-   and you need to remove / add the framework again, see section 4). If your static framework
-   is a binary release, some files require forced linkage. If you have access to the framework
+   and you need to remove / add the framework again, see section 4). Otherwise this means that
+   some of the source files require forced linkage. If you have access to the framework
    code, update the boostrap definitions and build the framework again. Otherwise add the -ObjC
    (and maybe -all_load) flag to your project target(s) and start the build again.
    

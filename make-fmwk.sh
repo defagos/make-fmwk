@@ -106,8 +106,8 @@ usage() {
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "                          (without the .xcodeproj extension)"
-    echo "   -s:                    Bundle the complete source code instead of the library "
-    echo "                          binary file. Useful for debugging purposes"
+    echo "   -s:                    Pack the complete source code into the static framework."
+    echo "                          Useful for debugging purposes"
     echo "   -t:                    Target to be used. If not specified the first target"
     echo "                          will be built"
     echo "   -u                     Tag identifying the version of the code which has"
@@ -432,14 +432,11 @@ mkdir -p "$headers_output_dir"
 
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
-# If source code only, does not pack binary files
-if ! $param_source_files_only; then
-    echo "Packing binaries..."
-    # TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
-    lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
-        "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
-        -o "$dot_framework_output_dir/$framework_name"
-fi
+echo "Packing binaries..."
+# TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
+lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
+    "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
+    -o "$dot_framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
