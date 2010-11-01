@@ -6,8 +6,6 @@
 //  Copyright 2010 Samuel Défago. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
 /**
  * Designated initializer: init
  */

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		6F2A93EC123D18B500A97F21 /* SimpleViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 6F2A93EA123D18B500A97F21 /* SimpleViewController.h */; };
 		6F2A93ED123D18B500A97F21 /* SimpleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F2A93EB123D18B500A97F21 /* SimpleViewController.m */; };
+		6FD8D7F3127F26BF003ADBAF /* CustomLabel.h in Headers */ = {isa = PBXBuildFile; fileRef = 6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */; };
+		6FD8D7F4127F26BF003ADBAF /* CustomLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */; };
 		AA747D9F0F9514B9006C5449 /* PrefixLibrary_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* PrefixLibrary_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 /* End PBXBuildFile section */
@@ -19,6 +21,8 @@
 		6F2A93F2123D1CB200A97F21 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/PrefixLibrary_Localizable.strings; sourceTree = "<group>"; };
 		6F2A93F5123D1D5C00A97F21 /* PrefixLibrary_apple.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = PrefixLibrary_apple.jpg; sourceTree = "<group>"; };
 		6F2A93FA123D1DFA00A97F21 /* PrefixLibrary_SimpleViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PrefixLibrary_SimpleViewController.xib; sourceTree = "<group>"; };
+		6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomLabel.h; sourceTree = "<group>"; };
+		6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomLabel.m; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* PrefixLibrary_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixLibrary_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D2AAC07E0554694100DB518D /* libPrefixLibrary.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPrefixLibrary.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -69,6 +73,8 @@
 			children = (
 				6F2A93EA123D18B500A97F21 /* SimpleViewController.h */,
 				6F2A93EB123D18B500A97F21 /* SimpleViewController.m */,
+				6FD8D7F1127F26BF003ADBAF /* CustomLabel.h */,
+				6FD8D7F2127F26BF003ADBAF /* CustomLabel.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -100,6 +106,7 @@
 			files = (
 				AA747D9F0F9514B9006C5449 /* PrefixLibrary_Prefix.pch in Headers */,
 				6F2A93EC123D18B500A97F21 /* SimpleViewController.h in Headers */,
+				6FD8D7F3127F26BF003ADBAF /* CustomLabel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6F2A93ED123D18B500A97F21 /* SimpleViewController.m in Sources */,
+				6FD8D7F4127F26BF003ADBAF /* CustomLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,11 +6,6 @@
 //  Copyright Samuel Défago 2010. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-
-// Forward declarations
-@class SimpleViewController;
-
 /**
  * Designated initializer: init
  */

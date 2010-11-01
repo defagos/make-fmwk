@@ -8,9 +8,6 @@
 
 #import "PrefixClientAppAppDelegate.h"
 
-// Framework public headers are imported using the < > syntax
-#import <PrefixLibrary/SimpleViewController.h>
-
 @interface PrefixClientAppAppDelegate ()
 
 @property (nonatomic, retain) SimpleViewController *simpleViewController;
