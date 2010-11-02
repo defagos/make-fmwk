@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Constants
-VERSION_NBR=1.1
+VERSION_NBR=1.2
 SCRIPT_NAME=`basename $0`
 EXECUTION_DIR=`pwd`
 DEFAULT_FRAMEWORK_LIST_FILE="$EXECUTION_DIR/frameworks.txt"
