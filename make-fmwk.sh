@@ -385,11 +385,12 @@ if ! $param_source_files_only; then
     echo -e "$bootstrap_function" >> "$bootstrap_output_file"
 fi
 
-# Run the builds (with bootstrap code if any)
+# Run the builds (with bootstrap code if any). The build directory (SYMROOT) overrides the one in the .pbxproj. This way we do
+# not have to parse the .pbxproj to find the SYMROOT to use with the lipo command (see below)
 build_failure=false
 echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" \
-    $target_parameter &> "$log_dir/$framework_full_name-simulator.buildlog" 
+    $target_parameter "SYMROOT=$BUILD_DIR" &> "$log_dir/$framework_full_name-simulator.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "Simulator build failed. Check the logs"
     build_failure=true
@@ -397,7 +398,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" \
-    $target_parameter &> "$log_dir/$framework_full_name-device.buildlog"
+    $target_parameter "SYMROOT=$BUILD_DIR" &> "$log_dir/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     build_failure=true
@@ -445,7 +446,6 @@ mkdir -p "$headers_output_dir"
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
 echo "Packing binaries..."
-# TODO: These are the standard paths / filenames. In general we should retrieve them from the pbxproj
 lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/lib$project_name.a" \
     "$BUILD_DIR/$configuration_name-iphoneos/lib$project_name.a" \
     -o "$dot_framework_output_dir/$framework_name"
