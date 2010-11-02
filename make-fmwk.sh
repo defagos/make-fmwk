@@ -230,16 +230,22 @@ fi
 if [ -z "$param_project_name" ]; then
     # Find all .xcodeproj directories. ls does not provide a way to list directories only,
     # we must do this manually
-    xcodeproj_list=`ls -l | grep ".xcodeproj" | grep "^d" | awk '{print $9}'`
+    xcodeproj_list=`ls -l | grep ".xcodeproj" | grep "^d"`
     
-    # Only one project must exist if the -p option is not used
+    # Not found
+    if [ "$?" -ne "0" ]; then
+        echo "[Error] No .xcodeproj directory found"
+        exit 1
+    fi
+    
+    # Several projects found
     if [ `echo "$xcodeproj_list" | wc -l` -ne "1" ]; then
         echo "[Error] Several .xcodeproj directories found; use the -p option for disambiguation"
         exit 1
     fi
     
-    # We have found our project; strip off the .xcodeproj
-    project_name=`echo "$xcodeproj_list" | sed 's/.xcodeproj//g'`
+    # Extract the project name, stripping off the .xcodeproj
+    project_name=`echo "$xcodeproj_list" | awk '{print $9}' | sed 's/.xcodeproj//g'`
 # Else check that the project specified exists
 else
     if [ ! -d "$EXECUTION_DIR/$param_project_name.xcodeproj" ]; then
