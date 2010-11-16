@@ -457,6 +457,6 @@ an iPad project). Run the make-fmwk.sh command again with the -k 3.2 switch (see
 your project again.
 
 If Maven were used, none of this would hopefully be necessary. Maven would take care of dependency
-transitivity for you (fixing the .pbxproj to add frameworks automagically. It would also take care
+transitivity for you (fixing the .pbxproj to add frameworks automagically). It would also take care
 of the libxml2 header path, and everything would be reduced to a single command :-)
 
