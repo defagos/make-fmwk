@@ -346,3 +346,12 @@ the one of the .xcodeproj anymore.
 
 In such cases, you will have to rename the output file in your project file. This should hoepfully be 
 fixed soon.
+
+
+13) Possible improvements
+    ---------------------
+Currently, if a static framework requires a system framework or library (e.g. CFNetwork, MapKit, libxml, 
+etc.), then these still need to be manually added to the client project using it. Similarly, if some
+settings are required (e.g. include path for libxml), those have to be set manually. There should be
+a way to automate such tasks by editing the .pbxproj directly. This feature is a must-have IMHO, but
+this will not be implemented until everything is implemented as a Maven plugin (see 10))
