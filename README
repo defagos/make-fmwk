@@ -355,3 +355,101 @@ etc.), then these still need to be manually added to the client project using it
 settings are required (e.g. include path for libxml), those have to be set manually. There should be
 a way to automate such tasks by editing the .pbxproj directly. This feature is a must-have IMHO, but
 this will not be implemented until everything is implemented as a Maven plugin (see 10))
+
+
+14) Real-life example: Building a .staticframework for ASIHTTPRequest
+    -----------------------------------------------------------------
+ASIHTTPRequest is a quite popular project, in v1.8 at the time of this writing. As always, the
+setup instructions are "copy the library files into your project, tune some settings, and you
+are done".
+
+Though the procedure is not as straightforward as it should be (the ASIHTTPRequest creator has
+not created any make-fmwk ready-to-build project), we can still pack this library into a
+.staticframework. Follow the instructions below:
+    
+a) Checkout make-fmwk.sh (the discussion here assumes you are using at least v1.2)
+
+b) Checkout the ASIHTTPRequest source code from Github:
+    git clone https://github.com/pokeb/asi-http-request.git
+
+c) No .pbxproj exists for the library (there are some sample projects. but these are standalone 
+test applications). You must therefore create the missing static library project using Xcode. A good name 
+choice is asi_http_request, to avoid current issues with make-fmwk.sh v1.8 and hyphens in project names
+(see section 12))
+
+d)  Copy the library .m and .h files into some subfolder of your static library project. For ASIHTTPRequest
+v1.8, those are:
+        ASIAuthenticationDialog.h
+        ASIAuthenticationDialog.m
+        ASICacheDelegate.h
+        ASIDataCompressor.h
+        ASIDataCompressor.m
+        ASIDataDecompressor.h
+        ASIDataDecompressor.m
+        ASIDownloadCache.h
+        ASIDownloadCache.m
+        ASIFormDataRequest.h
+        ASIFormDataRequest.m
+        ASIHTTPRequest.h
+        ASIHTTPRequest.m
+        ASIHTTPRequestConfig.h
+        ASIHTTPRequestDelegate.h
+        ASIInputStream.h
+        ASIInputStream.m
+        ASINetworkQueue.h
+        ASINetworkQueue.m
+        ASIProgressDelegate.h
+        ASIWebPageRequest.h
+        ASIWebPageRequest.m
+        Reachability.h
+        Reachability.m
+
+Open Xcode and add these files to the static library project project. Also add the following frameworks / libraries to this project:
+        *CFNetwork*
+        *SystemConfiguration*
+        *MobileCoreServices*
+        *CoreGraphics*
+        *UIKit*
+        libxml2 (do not forget to add the $(SDKROOT)/usr/include/libxml2 to your project Include search path; since this is not a 
+                framework, headers are not bundled with it)
+        libz
+For all frameworks between * *, add the corresponding global header <framework_name/framework_name.h> to the .pch file.
+Now build the library from within Xcode. Everything will compile.
+
+e) Create a publicHeaders.txt file listing all public header files (in fact all .h files from the above list), and save it within the
+static library main project directory.
+
+f) Create the .staticframework by opening a terminal and running the following commands from the static library main project directory
+(here we tag this version as 1.8):
+    make-fmwk.sh -u 1.8 Release
+    make-fmwk.sh -u 1.8 -s Debug
+(here I decided to put the whole source code into the Debug package for debugging purposes)
+
+If targeting iOS 3.2, we need to avoid compiling the ASIHTTPRequest iOS4 features by specifying the SDK version explicitly (otherwise
+linking with an iOS3.2 project will fail):
+    make-fmwk.sh -u 1.8 -k 3.2 Release
+    make-fmwk.sh -u 1.8 -k 3.2 -s Debug
+
+The resulting .staticframework is saved into your main static framework repository (~/StaticFrameworks).
+
+g) You are done. The .staticframework can now be added to any client project requiring it. In you client project main directory, create a 
+frameworks.txt file listing the frameworks you need (e.g. asi_http_request-1.8-Release). Then issue the link-fmwk.sh command to create the
+symbolic link to the .staticframework. Open the client project using Xcode and add the symbolic link to your project.
+
+To get the project to compile and link properly, you will (sadly) have to include the framework dependencies of ASIHTTPRequest itself:
+    CFNetwork
+    SystemConfiguration
+    MobileCoreServices
+    CoreGraphics
+    UIKit (should already be included)
+    libxml2 (also add $(SDKROOT)/usr/include/libxml2 to your project Include search path)
+    libz
+
+The make-fmwk command has taken care of including all headers in the .staticframework global include file, you therefore only have to add
+this header file to your .pch. Now build your project, everything should compile and link. If you get unresolved __Block_object_dispose
+calls, this means that your ASIHTTPRequest framework was compiled for iOS4, and you are linking to an iOS3 project (most probably an iPad
+project). Run the make-fmwk.sh command again with the -k 3.2 switch (see above), then build your project again.
+
+If Maven were used, none of this would hopefully be necessary. Maven would take care of dependency transitivity for you (fixing the .pbxproj
+to add frameworks automagically. It would also take care of the libxml2 header path, and everything would be reduced to a single command :-)
+
