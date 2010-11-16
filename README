@@ -331,3 +331,18 @@ static framework. Switch to the PrefixClientApp folder, and enter
 This generates a StaticFrameworks directory into the PrefixClientApp directory.
 
 Then open the PrefixClientApp project using Xcode. Compile and run, you are done!
+
+
+12) Known issues
+    ------------
+In general, with a default Xcode static library project, the name of the .a file matches the one of the
+.xcodeproj itself. An exception to this rule is when a project name contains hyphens (-). In such cases
+those are replaced by underscores (_) to obtain the name of the .a file. In such cases the script
+will not work since it assumes that the library name is the same as the project name when locating
+the .a files for the lipo command.
+
+The same issue affects projects for which the output file name has been changed and does not match
+the one of the .xcodeproj anymore.
+
+In such cases, you will have to rename the output file in your project file. This should hoepfully be 
+fixed soon.
