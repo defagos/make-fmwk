@@ -314,10 +314,10 @@ the binaries). Fix.
 
 11) Example
     -------
-This script is supplied with an example of a library (PrefixLibrary) for use by a client application
-(PrefixClientApp). This example conforms to the prefix convention for resources (thus its name)
-and shows how public headers are defined, how resources are accessed (localized strings, xib files
-and images) and how linkage can be forced for a category and a UILabel subclass.
+This script is supplied with an example of a library (PrefixLibrary) for use by a client 
+application (PrefixClientApp). This example conforms to the prefix convention for resources
+(thus its name) and shows how public headers are defined, how resources are accessed (localized 
+strings, xib files and images) and how linkage can be forced for a category and a UILabel subclass.
 
 To compile the library using the Release configuration, the one expected by the PrefixClientApp
 project, open a terminal in the PrefixLibrary directory, and enter
@@ -325,8 +325,8 @@ project, open a terminal in the PrefixLibrary directory, and enter
 This saves the .staticframework package into the default ~/StaticFrameworks repository. Feel free
 to experiment with script parameters if you want.
 
-To compile the client application, you must first create the symbolic links pointing to the PrefixLibrary
-static framework. Switch to the PrefixClientApp folder, and enter
+To compile the client application, you must first create the symbolic links pointing to the
+PrefixLibrary static framework. Switch to the PrefixClientApp folder, and enter
    /path/to/the/script/link-fmwk.sh
 This generates a StaticFrameworks directory into the PrefixClientApp directory.
 
@@ -335,26 +335,27 @@ Then open the PrefixClientApp project using Xcode. Compile and run, you are done
 
 12) Known issues
     ------------
-In general, with a default Xcode static library project, the name of the .a file matches the one of the
-.xcodeproj itself. An exception to this rule is when a project name contains hyphens (-). In such cases
-those are replaced by underscores (_) to obtain the name of the .a file. In such cases the script
-will not work since it assumes that the library name is the same as the project name when locating
-the .a files for the lipo command.
+In general, with a default Xcode static library project, the name of the .a file matches the
+one of the .xcodeproj itself. An exception to this rule is when a project name contains 
+hyphens (-). In such cases those are replaced by underscores (_) to obtain the name of the .a 
+file. In such cases the script will not work since it assumes that the library name is the 
+same as the project name when locating the .a files for the lipo command.
 
-The same issue affects projects for which the output file name has been changed and does not match
-the one of the .xcodeproj anymore.
+The same issue affects projects for which the output file name has been changed and does not 
+match the one of the .xcodeproj anymore.
 
-In such cases, you will have to rename the output file in your project file. This should hoepfully be 
-fixed soon.
+In such cases, you will have to rename the output file in your project file. This should 
+hopefully be fixed soon.
 
 
 13) Possible improvements
     ---------------------
-Currently, if a static framework requires a system framework or library (e.g. CFNetwork, MapKit, libxml, 
-etc.), then these still need to be manually added to the client project using it. Similarly, if some
-settings are required (e.g. include path for libxml), those have to be set manually. There should be
-a way to automate such tasks by editing the .pbxproj directly. This feature is a must-have IMHO, but
-this will not be implemented until everything is implemented as a Maven plugin (see 10))
+Currently, if a static framework requires a system framework or library (e.g. CFNetwork, 
+MapKit, libxml, etc.), then these still need to be manually added to the client project using it. 
+Similarly, if some settings are required (e.g. include path for libxml), those have to be set 
+manually. There should be a way to automate such tasks by editing the .pbxproj directly. This 
+feature is a must-have IMHO, but this will not be implemented until everything is implemented 
+as a Maven plugin (see 10))
 
 
 14) Real-life example: Building a .staticframework for ASIHTTPRequest
@@ -369,16 +370,16 @@ not created any make-fmwk ready-to-build project), we can still pack this librar
     
 a) Checkout make-fmwk.sh (the discussion here assumes you are using at least v1.2)
 
-b) Checkout the ASIHTTPRequest source code from Github:
+b) Checkout the ASIHTTPRequest source code from ithub:
     git clone https://github.com/pokeb/asi-http-request.git
 
 c) No .pbxproj exists for the library (there are some sample projects. but these are standalone 
-test applications). You must therefore create the missing static library project using Xcode. A good name 
-choice is asi_http_request, to avoid current issues with make-fmwk.sh v1.8 and hyphens in project names
-(see section 12))
+test applications). You must therefore create the missing static library project using Xcode. 
+A good name  choice is asi_http_request, to avoid current issues with make-fmwk.sh v1.8 and 
+hyphens in project names (see section 12))
 
-d)  Copy the library .m and .h files into some subfolder of your static library project. For ASIHTTPRequest
-v1.8, those are:
+d)  Copy the library .m and .h files into some subfolder of your static library project. For
+ASIHTTPRequest v1.8, those are:
         ASIAuthenticationDialog.h
         ASIAuthenticationDialog.m
         ASICacheDelegate.h
@@ -404,39 +405,42 @@ v1.8, those are:
         Reachability.h
         Reachability.m
 
-Open Xcode and add these files to the static library project project. Also add the following frameworks / libraries to this project:
+Open Xcode and add these files to the static library project. Also add the following frameworks and 
+libraries to this project:
         *CFNetwork*
         *SystemConfiguration*
         *MobileCoreServices*
         *CoreGraphics*
         *UIKit*
-        libxml2 (do not forget to add the $(SDKROOT)/usr/include/libxml2 to your project Include search path; since this is not a 
-                framework, headers are not bundled with it)
+        libxml2 (do not forget to add the $(SDKROOT)/usr/include/libxml2 to your project Include 
+                search path; since this is not a framework, headers are not bundled with it)
         libz
-For all frameworks between * *, add the corresponding global header <framework_name/framework_name.h> to the .pch file.
-Now build the library from within Xcode. Everything will compile.
+For all frameworks between * *, add the corresponding global header <framework_name/framework_name.h>
+to the .pch file. Now build the library from within Xcode. Everything will compile.
 
-e) Create a publicHeaders.txt file listing all public header files (in fact all .h files from the above list), and save it within the
-static library main project directory.
+e) Create a publicHeaders.txt file listing all public header files (in fact all .h files from the
+above list), and save it within the static library main project directory.
 
-f) Create the .staticframework by opening a terminal and running the following commands from the static library main project directory
-(here we tag this version as 1.8):
+f) Create the .staticframework by opening a terminal and running the following commands from the
+static library main project directory (here we tag this version as 1.8):
     make-fmwk.sh -u 1.8 Release
     make-fmwk.sh -u 1.8 -s Debug
 (here I decided to put the whole source code into the Debug package for debugging purposes)
 
-If targeting iOS 3.2, we need to avoid compiling the ASIHTTPRequest iOS4 features by specifying the SDK version explicitly (otherwise
-linking with an iOS3.2 project will fail):
+If targeting iOS 3.2, we need to avoid compiling the ASIHTTPRequest iOS4 features by specifying
+the SDK version explicitly (otherwise linking with an iOS3.2 project will fail):
     make-fmwk.sh -u 1.8 -k 3.2 Release
     make-fmwk.sh -u 1.8 -k 3.2 -s Debug
 
 The resulting .staticframework is saved into your main static framework repository (~/StaticFrameworks).
 
-g) You are done. The .staticframework can now be added to any client project requiring it. In you client project main directory, create a 
-frameworks.txt file listing the frameworks you need (e.g. asi_http_request-1.8-Release). Then issue the link-fmwk.sh command to create the
-symbolic link to the .staticframework. Open the client project using Xcode and add the symbolic link to your project.
+g) You are done. The .staticframework can now be added to any client project requiring it. In your
+client project main directory, create a  frameworks.txt file listing the frameworks you need (e.g.
+asi_http_request-1.8-Release). Then issue the link-fmwk.sh command to create the symbolic link to the
+.staticframework. Open the client project using Xcode and add the symbolic link to your project.
 
-To get the project to compile and link properly, you will (sadly) have to include the framework dependencies of ASIHTTPRequest itself:
+To get the project to compile and link properly, you will (sadly) have to include the framework
+dependencies of ASIHTTPRequest itself:
     CFNetwork
     SystemConfiguration
     MobileCoreServices
@@ -445,11 +449,14 @@ To get the project to compile and link properly, you will (sadly) have to includ
     libxml2 (also add $(SDKROOT)/usr/include/libxml2 to your project Include search path)
     libz
 
-The make-fmwk command has taken care of including all headers in the .staticframework global include file, you therefore only have to add
-this header file to your .pch. Now build your project, everything should compile and link. If you get unresolved __Block_object_dispose
-calls, this means that your ASIHTTPRequest framework was compiled for iOS4, and you are linking to an iOS3 project (most probably an iPad
-project). Run the make-fmwk.sh command again with the -k 3.2 switch (see above), then build your project again.
+The make-fmwk command has taken care of including all headers in the .staticframework global include
+file, you therefore only have to add this header file to your .pch. Now build your project, everything
+should compile and link. If you get unresolved __Block_object_dispose calls, this means that your
+ASIHTTPRequest framework was compiled for iOS4, and you are linking to an iOS3 project (most probably
+an iPad project). Run the make-fmwk.sh command again with the -k 3.2 switch (see above), then build
+your project again.
 
-If Maven were used, none of this would hopefully be necessary. Maven would take care of dependency transitivity for you (fixing the .pbxproj
-to add frameworks automagically. It would also take care of the libxml2 header path, and everything would be reduced to a single command :-)
+If Maven were used, none of this would hopefully be necessary. Maven would take care of dependency
+transitivity for you (fixing the .pbxproj to add frameworks automagically. It would also take care
+of the libxml2 header path, and everything would be reduced to a single command :-)
 
