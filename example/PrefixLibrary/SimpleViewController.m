@@ -8,6 +8,12 @@
 
 #import "SimpleViewController.h"
 
+@interface SimpleViewController ()
+
+- (void)releaseViews;
+
+@end
+
 @implementation SimpleViewController
 
 #pragma mark Object creation and destruction
@@ -25,9 +31,14 @@
 
 - (void)dealloc
 {
+    [self releaseViews];
+    [super dealloc];
+}
+
+- (void)releaseViews
+{
     self.label = nil;
     self.imageView = nil;
-    [super dealloc];
 }
 
 #pragma mark View lifecycle
@@ -40,6 +51,11 @@
     
     // As for any resource files, images must bear the framework prefix as well
     self.imageView.image = [UIImage imageNamed:@"PrefixLibrary_apple.jpg"];
+}
+
+- (void)viewDidUnload
+{
+    [self releaseViews];
 }
 
 #pragma mark Accessors and mutators
