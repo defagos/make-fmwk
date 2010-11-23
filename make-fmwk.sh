@@ -260,7 +260,7 @@ fi
 if [ -z "$param_sdk_version" ]; then
     # The showsdks command seems to return SDKs from the oldest to the most recent one. Just
     # keep the last line and extract the version
-    sdk_version=`xcodebuild -showsdks | grep iphoneos | tail -n 1 | awk '{print $6}' | sed 's/iphoneos//g'`
+    sdk_version=`xcodebuild -showsdks | grep iphoneos | tail -n 1 | sed -E 's/^.*iphoneos([0-9.]*)\s*$/\1/g'`
 # Check that the SDK specified exists
 else
     xcodebuild -showsdks | grep -w "iphoneos$param_sdk_version" > /dev/null
