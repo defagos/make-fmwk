@@ -103,7 +103,7 @@ usage() {
     echo "                          is used, the version number is not appended (if the"
     echo "                          -t option was not used, -n has no effect)"
     echo "   -o                     Output directory where the .staticframework will be"
-    echo "                          saved. If not specified, ~/Libraries is used"
+    echo "                          saved. If not specified, ~/StaticFrameworks is used"
     echo "   -p:                    If you have multiple projects in the same directory,"
     echo "                          indicate which one must be used using this option"
     echo "                          (without the .xcodeproj extension)"
