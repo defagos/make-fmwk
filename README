@@ -347,6 +347,9 @@ match the one of the .xcodeproj anymore.
 In such cases, you will have to rename the output file in your project file. This should 
 hopefully be fixed soon.
 
+Currently only files with standard Objective-C extensions (.m and .h) are supported. Files
+with extensions .c, .cpp, .mm or .C will be treated as resources, which is incorrect.
+
 
 13) Possible improvements
     ---------------------
@@ -370,7 +373,7 @@ not created any make-fmwk ready-to-build project), we can still pack this librar
     
 a) Checkout make-fmwk.sh (the discussion here assumes you are using at least v1.2)
 
-b) Checkout the ASIHTTPRequest source code from ithub:
+b) Checkout the ASIHTTPRequest source code from Github:
     git clone https://github.com/pokeb/asi-http-request.git
 
 c) No .pbxproj exists for the library (there are some sample projects. but these are standalone 
@@ -459,4 +462,17 @@ your project again.
 If Maven were used, none of this would hopefully be necessary. Maven would take care of dependency
 transitivity for you (fixing the .pbxproj to add frameworks automagically). It would also take care
 of the libxml2 header path, and everything would be reduced to a single command :-)
+
+
+15) Adapters
+    --------
+Since this tool is not mainstream (hopefully it will soon be ;-) ), some projects cannot be used
+as is with the make-fmwk.sh command. For some projets I find helpful, I will provide adapters which
+checkout the original source code and create a project that make-fmwk.sh will be happy to deal with.
+Those are found under the adapters directory, and you simply need to run the generate.sh script
+to checkout the code, create the project and build the .staticframeworks (which are saved in the
+default framework repository).
+
+Be warned that those scripts are quite rough and not necessarily cleverly written. If Maven were used,
+those would simply be replaced by a pom.xml file.
 

@@ -1,0 +1,5 @@
+build/
+Sources/
+CorePlot-CocoaTouch.xcodeproj/*.pbxuser
+CorePlot-CocoaTouch.xcodeproj/*.perspectivev3
+CorePlot-CocoaTouch.xcodeproj/*.mode1v3
