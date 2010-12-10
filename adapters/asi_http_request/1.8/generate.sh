@@ -13,6 +13,10 @@ if [ ! -d "$CHECKOUT_DIR" ]; then
     git clone git://github.com/pokeb/asi-http-request.git "$CHECKOUT_DIR"
 fi
 
+# Checking out recent some 1.8 version (first 1.8 is incorrectly identified as 1.7, and contains some annoying bugs)
+cd "$CHECKOUT_DIR"
+git checkout 307716adfc88e837412f1fe224bce1fd72497f39
+
 # Cleanup generated project directory before creating it again
 echo "Copying source files..."
 if [ -d "$GENERATED_SOURCE_DIR" ]; then
