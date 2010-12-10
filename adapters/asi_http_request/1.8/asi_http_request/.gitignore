@@ -1,0 +1,5 @@
+build/
+Sources/
+asi_http_request.xcodeproj/*.pbxuser
+asi_http_request.xcodeproj/*.perspectivev3
+asi_http_request.xcodeproj/*.mode1v3

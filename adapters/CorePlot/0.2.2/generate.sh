@@ -177,5 +177,5 @@ cp iphoneos-SDKSettings.plist "$GENERATED_SOURCE_DIR"
 # Build the framework
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
-"$MAKE_SCRIPT" -u "CORE_PLOT_VERSION" Release
-"$MAKE_SCRIPT" -u "CORE_PLOT_VERSION" -s Debug
+"$MAKE_SCRIPT" -u "$CORE_PLOT_VERSION" Release
+"$MAKE_SCRIPT" -u "$CORE_PLOT_VERSION" -s Debug
