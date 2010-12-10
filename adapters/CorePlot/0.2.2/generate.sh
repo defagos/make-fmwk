@@ -170,9 +170,7 @@ cp CorePlotProbes.d "$GENERATED_SOURCE_DIR"
 
 cd "$CHECKOUT_DIR/framework/SDKBuild"
 cp cp.sed "$GENERATED_SOURCE_DIR"
-cp iphonesimulator-SDKSettings.plist "$GENERATED_SOURCE_DIR"
 cp build.sh "$GENERATED_SOURCE_DIR"
-cp iphoneos-SDKSettings.plist "$GENERATED_SOURCE_DIR"
 
 # Build the framework
 echo "Creating frameworks..."

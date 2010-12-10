@@ -32,7 +32,6 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		07A5E24C104E47E900B7AB80 /* CPTextLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = BC9B829E0FB89E610035D8DA /* CPTextLayer.h */; };
 		6F5DFDD712B225DB007B70D9 /* _CPFillColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 6F5DFD4712B225DB007B70D9 /* _CPFillColor.h */; };
 		6F5DFDD812B225DB007B70D9 /* _CPFillColor.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F5DFD4812B225DB007B70D9 /* _CPFillColor.m */; };
 		6F5DFDD912B225DB007B70D9 /* _CPFillGradient.h in Headers */ = {isa = PBXBuildFile; fileRef = 6F5DFD4912B225DB007B70D9 /* _CPFillGradient.h */; };
@@ -319,8 +318,6 @@
 		6F5DFDCC12B225DB007B70D9 /* CPXYPlotSpace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPXYPlotSpace.m; sourceTree = "<group>"; };
 		6F5DFDCD12B225DB007B70D9 /* CPXYTheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPXYTheme.h; sourceTree = "<group>"; };
 		6F5DFDCE12B225DB007B70D9 /* CPXYTheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPXYTheme.m; sourceTree = "<group>"; };
-		6F5DFDCF12B225DB007B70D9 /* iphoneos-SDKSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "iphoneos-SDKSettings.plist"; sourceTree = "<group>"; };
-		6F5DFDD012B225DB007B70D9 /* iphonesimulator-SDKSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "iphonesimulator-SDKSettings.plist"; sourceTree = "<group>"; };
 		6F5DFDD112B225DB007B70D9 /* NSDecimalNumberExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSDecimalNumberExtensions.h; sourceTree = "<group>"; };
 		6F5DFDD212B225DB007B70D9 /* NSDecimalNumberExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDecimalNumberExtensions.m; sourceTree = "<group>"; };
 		6F5DFDD312B225DB007B70D9 /* NSExceptionExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSExceptionExtensions.h; sourceTree = "<group>"; };
@@ -328,7 +325,6 @@
 		6F5DFDD512B225DB007B70D9 /* NSNumberExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSNumberExtensions.h; sourceTree = "<group>"; };
 		6F5DFDD612B225DB007B70D9 /* NSNumberExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSNumberExtensions.m; sourceTree = "<group>"; };
 		BC9B82690FB89BD10035D8DA /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		BC9B829E0FB89E610035D8DA /* CPTextLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPTextLayer.h; path = "/Users/defagos/Development/iPhone/make-fmwk/adapters/CorePlot/0.2.2/CorePlot-CocoaTouch/Source/CPTextLayer.h"; sourceTree = "<absolute>"; };
 		BC9B83470FB8A0A40035D8DA /* libCorePlot-CocoaTouch.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libCorePlot-CocoaTouch.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -515,8 +511,6 @@
 				6F5DFDCC12B225DB007B70D9 /* CPXYPlotSpace.m */,
 				6F5DFDCD12B225DB007B70D9 /* CPXYTheme.h */,
 				6F5DFDCE12B225DB007B70D9 /* CPXYTheme.m */,
-				6F5DFDCF12B225DB007B70D9 /* iphoneos-SDKSettings.plist */,
-				6F5DFDD012B225DB007B70D9 /* iphonesimulator-SDKSettings.plist */,
 				6F5DFDD112B225DB007B70D9 /* NSDecimalNumberExtensions.h */,
 				6F5DFDD212B225DB007B70D9 /* NSDecimalNumberExtensions.m */,
 				6F5DFDD312B225DB007B70D9 /* NSExceptionExtensions.h */,
@@ -534,7 +528,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07A5E24C104E47E900B7AB80 /* CPTextLayer.h in Headers */,
 				6F5DFDD712B225DB007B70D9 /* _CPFillColor.h in Headers */,
 				6F5DFDD912B225DB007B70D9 /* _CPFillGradient.h in Headers */,
 				6F5DFDDB12B225DB007B70D9 /* _CPFillImage.h in Headers */,
