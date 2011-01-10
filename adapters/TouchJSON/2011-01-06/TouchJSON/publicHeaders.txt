@@ -1,0 +1,12 @@
+CDataScanner.h
+CDataScanner_Extensions.h
+CFilteringJSONSerializer.h
+CJSONDeserializer.h
+CJSONDeserializer_BlocksExtensions.h
+CJSONScanner.h
+CJSONSerializedData.h
+CJSONSerializer.h
+JSONRepresentation.h
+NSCharacterSet_Extensions.h
+NSDictionary_JSONExtensions.h
+NSScanner_Extensions.h

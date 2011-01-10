@@ -1,0 +1,5 @@
+build/
+Sources/
+TouchJSON.xcodeproj/*.pbxuser
+TouchJSON.xcodeproj/*.perspectivev3
+TouchJSON.xcodeproj/*.mode1v3
