@@ -18,6 +18,12 @@ if [ ! -d "$CHECKOUT_DIR" ]; then
     git clone https://github.com/schwa/TouchJSON.git "$CHECKOUT_DIR"
 fi
 
+# Check if the source code could be checked out
+if [ ! -d "$CHECKOUT_DIR" ]; then
+    echo "Source code checkout failure"
+    exit 1
+fi
+
 # Checking out some version
 cd "$CHECKOUT_DIR"
 git checkout "$COMMIT_VERSION_NBR"

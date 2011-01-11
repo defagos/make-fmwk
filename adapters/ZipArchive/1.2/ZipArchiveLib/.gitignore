@@ -1,0 +1,5 @@
+build/
+Sources/
+ZipArchiveLib.xcodeproj/*.pbxuser
+ZipArchiveLib.xcodeproj/*.perspectivev3
+ZipArchiveLib.xcodeproj/*.mode1v3

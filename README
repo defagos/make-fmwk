@@ -347,8 +347,20 @@ match the one of the .xcodeproj anymore.
 In such cases, you will have to rename the output file in your project file. This should 
 hopefully be fixed soon.
 
-Currently only files with standard Objective-C extensions (.m and .h) are supported. Files
-with extensions .c, .cpp, .mm or .C will be treated as resources, which is incorrect.
+Finally, you might encounter linker issues when using some static frameworks. Those can currently
+(and sadly) only be solved by editing your client project settings to fix the linker behavior (within 
+Xcode, double-click the project, and under the "Build" tab search for the "Other Linker Flags" setting).
+Most notably:
+  - if the static framework uses libxml internally, you need either to add -lxml2 to your project
+    "Other Linker Flags" setting, or to add libxml2.dylib to your project frameworks, otherwise you
+    will get unresolved symbols. You will also need to add $(SDKROOT)/usr/include/libxml2 to your 
+    project Include search path if one of the libxml headers is included from a framework header file
+  - if the static framework was created by compiling C++ files (.mm most probably), the client project
+    cannot know it must link against the C++ runtime, and you will get unresolved symbols. This is
+    fixed by adding -lstdc++ to your project "Other Linker Flags" setting
+In all cases, your static framework should document which settings need to be tweaked for the client
+project. If Maven were used, this could probably be made automatically, so that you would never have
+to change project settings to use a .staticframework.
 
 
 13) Possible improvements
@@ -451,6 +463,8 @@ dependencies of ASIHTTPRequest itself:
     UIKit (should already be included)
     libxml2 (also add $(SDKROOT)/usr/include/libxml2 to your project Include search path)
     libz
+(Remark: instead of adding libxml2 to your project frameworks, you can add -lxml2 to your "Other Linker
+Flags" project setting)
 
 The make-fmwk command has taken care of including all headers in the .staticframework global include
 file, you therefore only have to add this header file to your .pch. Now build your project, everything

@@ -14,6 +14,12 @@ if [ ! -d "$CHECKOUT_DIR" ]; then
     hg clone -u alpharelease_0.2.2 https://core-plot.googlecode.com/hg/ "$CHECKOUT_DIR"
 fi
 
+# Check if the source code could be checked out
+if [ ! -d "$CHECKOUT_DIR" ]; then
+    echo "Source code checkout failure"
+    exit 1
+fi
+
 # Cleanup generated project directory before creating it again
 echo "Copying source files..."
 if [ -d "$GENERATED_SOURCE_DIR" ]; then
