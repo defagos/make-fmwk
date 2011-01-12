@@ -1,0 +1,5 @@
+build/
+Sources/
+GDataTouch.xcodeproj/*.pbxuser
+GDataTouch.xcodeproj/*.perspectivev3
+GDataTouch.xcodeproj/*.mode1v3
