@@ -326,7 +326,8 @@ if [ -d "$framework_output_dir" ]; then
     echo "Framework already exists. Cleaning up first..."
     
     # Restore write permissions
-    find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
+    # TODO: See remark about the other chmod
+    # find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
     
     rm -rf "$framework_output_dir"
 fi
@@ -649,7 +650,9 @@ echo "</dict>" >> "$manifest_file"
 echo "</plist>" >> "$manifest_file"
 
 # Lock all .staticframework contents to prevent the user from accidentally editing them within Xcode
-find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
+# TODO: This does not work; when a .staticframework is used in debug mode, it suffices to alter the header (e.g. to add a comment), to make it
+#       again, and to build a project to get duplicate symbols errors. WTF?
+# find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
 
 # Done
 echo "Done."
