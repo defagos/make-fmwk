@@ -325,8 +325,8 @@ framework_output_dir="$output_dir/$framework_full_name.staticframework"
 if [ -d "$framework_output_dir" ]; then
     echo "Framework already exists. Cleaning up first..."
     
-    # Remove locks
-    find "$framework_output_dir" -exec SetFile -a l {} \;
+    # Restore write permissions
+    find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
     
     rm -rf "$framework_output_dir"
 fi
@@ -648,8 +648,8 @@ fi
 echo "</dict>" >> "$manifest_file"
 echo "</plist>" >> "$manifest_file"
 
-# Lock all .staticframework files to prevent the user from accidentally editing them within Xcode
-find "$framework_output_dir" -exec SetFile -a L {} \;
+# Lock all .staticframework contents to prevent the user from accidentally editing them within Xcode
+find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
 
 # Done
 echo "Done."
