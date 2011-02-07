@@ -176,7 +176,7 @@ pbxproj_files_arr=(`ls -1 *.xcodeproj/project.pbxproj`)
 for pbxproj_file in ${pbxproj_files_arr[@]}
 do
     # Locate framework paths in this project file
-    pbxproj_frameworks=`cat "$pbxproj_file" | grep "/StaticFrameworks/"`
+    pbxproj_frameworks=`cat "$pbxproj_file" | grep "/StaticFrameworks\/.*\.staticframework"`
     
     # Identify bad links
     for pbxproj_framework in ${pbxproj_frameworks[@]}
