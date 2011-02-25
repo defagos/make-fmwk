@@ -14,8 +14,9 @@ FORCE_LINK_TAG="FILE_FORCE_LINK"
 # Global variables
 param_bootstrap_file=""
 param_code_version=""
-param_source_files_only=false
+param_source_files=false
 param_log_dir=""
+param_lock_output=false
 param_omit_version_in_name=false
 param_output_dir=""
 param_project_name=""
@@ -66,7 +67,7 @@ usage() {
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
-    echo "         [-b bootstrap_file] [-n] [-s] [-v] [-h] configuration_name"
+    echo "         [-b bootstrap_file] [-n] [-s] [-v] [-h] [-L] configuration_name"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -97,6 +98,8 @@ usage() {
     echo "                          use a specific version number, e.g. 4.0"
     echo "   -l:                    Output directory for log files (build directory"
     echo "                          if omitted)"
+    echo "   -L:                    Lock the .staticframework output files to prevent from"
+    echo "                          accidental changes"
     echo "   -n:                    By default, if the code version is specified it is"
     echo "                          appended to the framework name. This allows projects"
     echo "                          to be bound to specific framework versions. If -n"
@@ -137,7 +140,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:l:no:p:st:u:v OPT; do
+while getopts b:f:hk:l:Lno:p:st:u:v OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -155,6 +158,9 @@ while getopts b:f:hk:l:no:p:st:u:v OPT; do
         l)
             param_log_dir="$OPTARG"
             ;;
+        L)
+            param_lock_output=true
+            ;;
         n)
             param_omit_version_in_name=true;
             ;;
@@ -165,7 +171,7 @@ while getopts b:f:hk:l:no:p:st:u:v OPT; do
             param_project_name="$OPTARG"
             ;;
         s)
-            param_source_files_only=true
+            param_source_files=true
             ;;
         t)
             param_target_name="$OPTARG"
@@ -325,9 +331,8 @@ framework_output_dir="$output_dir/$framework_full_name.staticframework"
 if [ -d "$framework_output_dir" ]; then
     echo "Framework already exists. Cleaning up first..."
     
-    # Restore write permissions
-    # TODO: See remark about the other chmod
-    # find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
+    # Restore write permissions (if any were set)
+    find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
     
     rm -rf "$framework_output_dir"
 fi
@@ -337,7 +342,7 @@ mkdir -p "$framework_output_dir"
 
 # Creation of the bootstrap code for selective forced linking (not required when the source code has been included;
 # in this case the linker will find everything it needs)
-if ! $param_source_files_only; then
+if ! $param_source_files; then
     echo "Generating bootstrap code..."
     bootstrap_output_dir="$framework_output_dir/Bootstrap"
     mkdir -p "$bootstrap_output_dir"
@@ -416,7 +421,7 @@ if [ "$?" -ne "0" ]; then
 fi
 
 # Restore the original source code without bootstrapping code (only if source code not bundled, see above)
-if ! $param_source_files_only; then
+if ! $param_source_files; then
     if [ -f "$bootstrap_file" ]; then
         bootstrapped_files_arr=(`cat "$bootstrap_file" | grep -v '^$'`)
         for bootstrapped_file in ${bootstrapped_files_arr[@]}
@@ -588,7 +593,7 @@ do
 done
 
 # Copy only sources if desired (useful for debugging purposes)
-if $param_source_files_only; then
+if $param_source_files; then
     echo "Copying source code..."
 
     # As for resources, prefixing the source folder with the framework name makes it more convenient to
@@ -650,9 +655,9 @@ echo "</dict>" >> "$manifest_file"
 echo "</plist>" >> "$manifest_file"
 
 # Lock all .staticframework contents to prevent the user from accidentally editing them within Xcode
-# TODO: This does not work; when a .staticframework is used in debug mode, it suffices to alter the header (e.g. to add a comment), to make it
-#       again, and to build a project to get duplicate symbols errors. WTF?
-# find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
+if $param_lock_output; then
+    find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
+fi
 
 # Done
 echo "Done."
