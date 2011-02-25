@@ -321,6 +321,11 @@ else
     framework_full_name="$framework_name-$configuration_name"
 fi
 
+# If sources are packaged within the framework, appends an additional extension
+if $param_source_files; then
+    framework_full_name="$framework_full_name-src"
+fi
+
 # Create framework
 echo "Creating framework pseudo-bundle..."
 
@@ -660,4 +665,4 @@ if $param_lock_output; then
 fi
 
 # Done
-echo "Done."
+echo "Done creating $framework_full_name."
