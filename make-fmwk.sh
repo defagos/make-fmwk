@@ -665,4 +665,4 @@ if $param_lock_output; then
 fi
 
 # Done
-echo "Done creating $framework_full_name."
+echo "Done creating $framework_full_name.staticframework"
