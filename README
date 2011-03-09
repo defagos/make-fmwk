@@ -9,7 +9,7 @@ Written by Samuel Défago, inspired by Pete Goodliffe's article published on acc
    ------------
 Xcode offers a framework creation project template for MacOS applications, but no such template
 is provided for iOS. One of the reasons is probably that a framework is an NSBundle, of which
-no other instance than the main bundle can exist on iOS. The stems from the fact that an NSBundle
+no other instance than the main bundle can exist on iOS. This stems from the fact that an NSBundle
 must contain executable code, otherwise it cannot be loaded (and therefore its resources cannot be
 accessed). Since iOS applications run in sandboxes, they are not allowed to use shared libraries,
 and therefore bundles cannot be loaded. Thus, for applications running on iOS, there is
@@ -53,7 +53,7 @@ to handle various versions of a library within the same .framework directory. Re
 MacOS framework programming guide for more information.
       
 Frameworks satisfying these requirements can be added to an Xcode project with a single click.
-Such .frameworks can also embed resources since the .framework (whether it is deployed 
+Such .frameworks can also embbed resources since the .framework (whether it is deployed 
 system-wide or copied for private use in the application bundle) is a true NSBundle.
 
 The binary file located at the root of the .framework directory does not need to be diretctly

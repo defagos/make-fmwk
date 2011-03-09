@@ -41,4 +41,5 @@ rm -rf "$GENERATED_SOURCE_DIR/Tools"
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
 "$MAKE_SCRIPT" -u "$VERSION" Release
+"$MAKE_SCRIPT" -u "$VERSION" Debug
 "$MAKE_SCRIPT" -u "$VERSION" -s Debug

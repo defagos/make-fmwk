@@ -21,7 +21,7 @@ fi
 
 # Checking out some recent 1.8 version (the first 1.8 version is incorrectly identified as 1.7, and contains some annoying bugs)
 cd "$CHECKOUT_DIR"
-git checkout 307716adfc88e837412f1fe224bce1fd72497f39
+git checkout 341fb853b66e7ef7263e38382197402f7ae0a944
 
 # Cleanup generated project directory before creating it again
 echo "Copying source files..."
@@ -43,4 +43,5 @@ echo "Version found: $asi_http_request_version"
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
 "$MAKE_SCRIPT" -u "$asi_http_request_version" Release
+"$MAKE_SCRIPT" -u "$asi_http_request_version" Debug
 "$MAKE_SCRIPT" -u "$asi_http_request_version" -s Debug
