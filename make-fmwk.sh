@@ -467,8 +467,7 @@ mkdir -p "$headers_output_dir"
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
 echo "Packing binaries..."
-lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/"* \
-    "$BUILD_DIR/$configuration_name-iphoneos/"* \
+lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/"*.a "$BUILD_DIR/$configuration_name-iphoneos/"*.a \
     -o "$dot_framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
