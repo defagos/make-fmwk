@@ -65,7 +65,7 @@
 		6F7FD69D129317340005DD9A /* libxml2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7FD69C129317340005DD9A /* libxml2.dylib */; };
 		6F7FD69F129317340005DD9A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7FD69E129317340005DD9A /* libz.dylib */; };
 		6F7FD6A3129317A60005DD9A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7FD6A2129317A60005DD9A /* UIKit.framework */; };
-		AA747D9F0F9514B9006C5449 /* asi_http_request_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* asi_http_request_Prefix.pch */; };
+		AA747D9F0F9514B9006C5449 /* ASINetworking_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* ASINetworking_Prefix.pch */; };
 		AACBBE4A0F95108600F1A2B1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACBBE490F95108600F1A2B1 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
@@ -128,9 +128,9 @@
 		6F7FD69C129317340005DD9A /* libxml2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.dylib; path = usr/lib/libxml2.dylib; sourceTree = SDKROOT; };
 		6F7FD69E129317340005DD9A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		6F7FD6A2129317A60005DD9A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		AA747D9E0F9514B9006C5449 /* asi_http_request_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = asi_http_request_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		AA747D9E0F9514B9006C5449 /* ASINetworking_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ASINetworking_Prefix.pch; sourceTree = SOURCE_ROOT; };
 		AACBBE490F95108600F1A2B1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		D2AAC07E0554694100DB518D /* libasi_http_request.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libasi_http_request.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2AAC07E0554694100DB518D /* libASINetworking.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libASINetworking.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,12 +155,12 @@
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D2AAC07E0554694100DB518D /* libasi_http_request.a */,
+				D2AAC07E0554694100DB518D /* libASINetworking.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0867D691FE84028FC02AAC07 /* asi_http_request */ = {
+		0867D691FE84028FC02AAC07 /* ASINetworking */ = {
 			isa = PBXGroup;
 			children = (
 				6F5DFE7F12B231DD007B70D9 /* Sources */,
@@ -168,7 +168,7 @@
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
 			);
-			name = asi_http_request;
+			name = ASINetworking;
 			sourceTree = "<group>";
 		};
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
@@ -189,7 +189,7 @@
 		32C88DFF0371C24200C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				AA747D9E0F9514B9006C5449 /* asi_http_request_Prefix.pch */,
+				AA747D9E0F9514B9006C5449 /* ASINetworking_Prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -291,7 +291,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA747D9F0F9514B9006C5449 /* asi_http_request_Prefix.pch in Headers */,
+				AA747D9F0F9514B9006C5449 /* ASINetworking_Prefix.pch in Headers */,
 				6F5DFEB712B231DD007B70D9 /* ASIAuthenticationDialog.h in Headers */,
 				6F5DFEB912B231DD007B70D9 /* ASICacheDelegate.h in Headers */,
 				6F5DFEBA12B231DD007B70D9 /* ASIDataCompressor.h in Headers */,
@@ -326,9 +326,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D2AAC07D0554694100DB518D /* asi_http_request */ = {
+		D2AAC07D0554694100DB518D /* ASINetworking */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "asi_http_request" */;
+			buildConfigurationList = 1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "ASINetworking" */;
 			buildPhases = (
 				D2AAC07A0554694100DB518D /* Headers */,
 				D2AAC07B0554694100DB518D /* Sources */,
@@ -338,9 +338,9 @@
 			);
 			dependencies = (
 			);
-			name = asi_http_request;
-			productName = asi_http_request;
-			productReference = D2AAC07E0554694100DB518D /* libasi_http_request.a */;
+			name = ASINetworking;
+			productName = ASINetworking;
+			productReference = D2AAC07E0554694100DB518D /* libASINetworking.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -348,7 +348,7 @@
 /* Begin PBXProject section */
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "asi_http_request" */;
+			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "ASINetworking" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -358,12 +358,12 @@
 				French,
 				German,
 			);
-			mainGroup = 0867D691FE84028FC02AAC07 /* asi_http_request */;
+			mainGroup = 0867D691FE84028FC02AAC07 /* ASINetworking */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D2AAC07D0554694100DB518D /* asi_http_request */,
+				D2AAC07D0554694100DB518D /* ASINetworking */,
 			);
 		};
 /* End PBXProject section */
@@ -408,15 +408,15 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				COPY_PHASE_STRIP = NO;
-				DSTROOT = /tmp/asi_http_request.dst;
+				DSTROOT = /tmp/ASINetworking.dst;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = asi_http_request_Prefix.pch;
+				GCC_PREFIX_HEADER = ASINetworking_Prefix.pch;
 				INSTALL_PATH = /usr/local/lib;
-				PRODUCT_NAME = asi_http_request;
+				PRODUCT_NAME = ASINetworking;
 			};
 			name = Debug;
 		};
@@ -425,12 +425,12 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				DSTROOT = /tmp/asi_http_request.dst;
+				DSTROOT = /tmp/ASINetworking.dst;
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = asi_http_request_Prefix.pch;
+				GCC_PREFIX_HEADER = ASINetworking_Prefix.pch;
 				INSTALL_PATH = /usr/local/lib;
-				PRODUCT_NAME = asi_http_request;
+				PRODUCT_NAME = ASINetworking;
 			};
 			name = Release;
 		};
@@ -466,7 +466,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "asi_http_request" */ = {
+		1DEB921E08733DC00010E9CD /* Build configuration list for PBXNativeTarget "ASINetworking" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB921F08733DC00010E9CD /* Debug */,
@@ -475,7 +475,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "asi_http_request" */ = {
+		1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "ASINetworking" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1DEB922308733DC00010E9CD /* Debug */,

@@ -1,0 +1,5 @@
+build/
+Sources/
+ASINetworking.xcodeproj/*.pbxuser
+ASINetworking.xcodeproj/*.perspectivev3
+ASINetworking.xcodeproj/*.mode1v3
