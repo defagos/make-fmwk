@@ -45,4 +45,5 @@ mv "$GENERATED_SOURCE_DIR/ZipArchive.h.tmp" "$GENERATED_SOURCE_DIR/ZipArchive.h"
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
 "$MAKE_SCRIPT" -u "$VERSION" Release
+"$MAKE_SCRIPT" -u "$VERSION" Debug
 "$MAKE_SCRIPT" -u "$VERSION" -s Debug

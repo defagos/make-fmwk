@@ -42,4 +42,5 @@ cp -r "$CHECKOUT_DIR/Source/" "$GENERATED_SOURCE_DIR"
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
 "$MAKE_SCRIPT" -u "$COMMIT_DATE" Release
+"$MAKE_SCRIPT" -u "$COMMIT_DATE" Debug
 "$MAKE_SCRIPT" -u "$COMMIT_DATE" -s Debug

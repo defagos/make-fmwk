@@ -182,4 +182,5 @@ cp build.sh "$GENERATED_SOURCE_DIR"
 echo "Creating frameworks..."
 cd "$GENERATED_PROJECT_DIR"
 "$MAKE_SCRIPT" -u "$CORE_PLOT_VERSION" Release
+"$MAKE_SCRIPT" -u "$CORE_PLOT_VERSION" Debug
 "$MAKE_SCRIPT" -u "$CORE_PLOT_VERSION" -s Debug
