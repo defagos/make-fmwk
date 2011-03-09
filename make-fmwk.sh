@@ -597,6 +597,9 @@ do
     fi
 done
 
+# Delete Resources directory if empty
+rmdir "$resources_output_dir" 2> /dev/null
+
 # Copy only sources if desired (useful for debugging purposes)
 if $param_source_files; then
     echo "Copying source code..."
