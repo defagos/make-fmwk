@@ -15,7 +15,7 @@ COMMIT_DATE="2011-01-06"
 # Get the source code if not already checked out
 echo "Checking out source code..."
 if [ ! -d "$CHECKOUT_DIR" ]; then
-    git clone https://github.com/schwa/TouchJSON.git "$CHECKOUT_DIR"
+    git clone git://github.com/TouchCode/TouchJSON.git "$CHECKOUT_DIR"
 fi
 
 # Check if the source code could be checked out
