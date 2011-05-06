@@ -3,5 +3,6 @@
 //
 
 #ifdef __OBJC__
+    #import <zlib.h>
     #import <Foundation/Foundation.h>
 #endif
