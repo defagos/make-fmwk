@@ -162,6 +162,11 @@ Using a static framework is also easy:
      on your project explorer tree. Add them as references only, do not copy them
   e) You can include the framework main header in your project precompiled header file,
      or just include the headers you need where you need them (always using #import < >)
+  f) Remove references to those .staticframework localized resources you do not need in your
+     project (e.g. you might use a framework including localized resources for english,
+     french, german and italian, but your application only targets english and german).
+     Otherwise you will end up having a partially localized application for the non-needed
+     languages (in our example, french and italian)
      
 If a static framework has been updated, you might encounter errors when compiling a project
 using it. This happens in the following cases:
@@ -346,6 +351,9 @@ match the one of the .xcodeproj anymore.
 
 In such cases, you will have to rename the output file in your project file. This should 
 hopefully be fixed soon.
+
+It is also rather inconvenient to have to remove non-needed localized resources after they
+have been added to a project (see 4)).
 
 Finally, you might encounter linker issues when using some static frameworks. Those can currently
 (and sadly) only be solved by editing your client project settings to fix the linker behavior (within 
