@@ -358,7 +358,7 @@ if ! $param_source_files; then
     framework_name_clean=`echo "$framework_name" | sed 's/[-+]//g'`
     
     # Begin of the bootstrap function code
-    bootstrap_function="\nstatic void ${framework_name_clean}_bootstrap()\n{"
+    bootstrap_function="\n__attribute__((unused)) static void ${framework_name_clean}_bootstrap()\n{"
     
     # Add bootstrapping code to all classes listed in the bootstrap file (if any)
     if [ -f "$bootstrap_file" ]; then
@@ -400,10 +400,7 @@ if ! $param_source_files; then
     else
         echo "[Info] No bootstrap file has been provided"
     fi
-    
-    # Avoid "Unused function" warning
-    bootstrap_function="$bootstrap_function\n\n\tif (NO) { CoconutKit_bootstrap(); }"
-    
+        
     # End of the bootstrap function; add it to the bootstrap source file
     bootstrap_function="$bootstrap_function\n}"
     echo -e "$bootstrap_function" >> "$bootstrap_output_file"
