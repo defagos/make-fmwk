@@ -358,7 +358,7 @@ if ! $param_source_files; then
     framework_name_clean=`echo "$framework_name" | sed 's/[-+]//g'`
     
     # Begin of the bootstrap function code
-    bootstrap_function="\n__attribute__((unused)) static void ${framework_name_clean}_bootstrap()\n{"
+    bootstrap_function="\n__attribute__((unused)) void ${framework_name_clean}_bootstrap()\n{"
     
     # Add bootstrapping code to all classes listed in the bootstrap file (if any)
     if [ -f "$bootstrap_file" ]; then
