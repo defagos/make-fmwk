@@ -356,7 +356,8 @@ if ! $param_source_files; then
     framework_name_clean=`echo "$framework_name" | sed 's/[-+]//g'`
     
     # Begin of the bootstrap function code
-    bootstrap_function="\n__attribute__((unused)) void ${framework_name_clean}_bootstrap()\n{"
+    bootstrap_function="__attribute__((unused)) void ${framework_name_clean}_bootstrap(void);"
+    bootstrap_function="$bootstrap_function\n__attribute__((unused)) void ${framework_name_clean}_bootstrap(void)\n{"
     
     # Add bootstrapping code to all classes listed in the bootstrap file (if any)
     if [ -f "$bootstrap_file" ]; then
@@ -398,9 +399,6 @@ if ! $param_source_files; then
     else
         echo "[Info] No bootstrap file has been provided"
     fi
-
-    # Avoid warnings activated by default for projects created with Xcode4 (missing function prototypes)
-    echo -e "#pragma GCC diagnostic ignored \"-Wmissing-prototypes\"" >> "$bootstrap_output_file"
 
     # End of the bootstrap function; add it to the bootstrap source file
     bootstrap_function="$bootstrap_function\n}"
