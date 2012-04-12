@@ -162,7 +162,7 @@ while getopts b:f:hk:l:Lno:p:st:u:v OPT; do
             param_lock_output=true
             ;;
         n)
-            param_omit_version_in_name=true;
+            param_omit_version_in_name=true
             ;;
         o)
             param_output_dir="$OPTARG"
@@ -398,7 +398,10 @@ if ! $param_source_files; then
     else
         echo "[Info] No bootstrap file has been provided"
     fi
-        
+
+    # Avoid warnings activated by default for projects created with Xcode4 (missing function prototypes)
+    echo -e "#pragma GCC diagnostic ignored \"-Wmissing-prototypes\"" >> "$bootstrap_output_file"
+
     # End of the bootstrap function; add it to the bootstrap source file
     bootstrap_function="$bootstrap_function\n}"
     echo -e "$bootstrap_function" >> "$bootstrap_output_file"
