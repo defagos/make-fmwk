@@ -42,12 +42,12 @@ usage() {
     echo "process are packed into the framework itself (as a plist manifest file)."
     echo ""
     echo "A file listing all headers to be made public is required. Based on this file,"
-    echo "this script also generate a global framework header, usually imported in"
+    echo "this script also generate a global framework header, usually to be imported in"
     echo "precompiled header files."
     echo ""
     echo "In some cases, the Objective-C linker will never be able to link code from a"
     echo "library (e.g. source files containing a category for a class defined outside"
-    echo "the library). In such cases linkage must usually be forced by setting the -ObjC"
+    echo "the library). In such cases linkage is usually forced by setting the -ObjC"
     echo "linker flag in the target settings of the client project. This forces all library"
     echo "object files to be loaded, for all libraries used by this project. Since this can"
     echo "lead to larger executable files than necessary (and to more project configuration"
@@ -57,8 +57,8 @@ usage() {
     echo ""
     echo "To avoid conflicting names when merging framework resources with other"
     echo "framework resources or with application resources, all resource files"
-    echo "should be prefixed with the name of the framework. The script generates"
-    echo "warnings if this is not the case."
+    echo "should be prefixed with the name of the framework, or embedded into a"
+    echo "bundle."
     echo ""
     echo "By default the generated .staticframework file is saved under a common"
     echo " ~/StaticFrameworks directory acting as a framework repository. You can"
@@ -518,15 +518,7 @@ else
     echo "          the global framework header"
 fi
 
-# Resources files are packed in the .framework directory for convenience (so that all files related to the library
-# are collected in a single location), but they still must be added to the project manually. The reason is that the
-# static library .framework we create is not a bundle like a real .framework is. A bundle namely must contain executable
-# code in order to be loaded, but a static library is not loabdable. A corollary is that there is no way to create bundles
-# in the iOS world (except the main bundle which is created for us) since executable code in non-main bundles means dynamic
-# libraries. But dynamic libraries cannot be created for iOS (which is also the reason why normal frameworks cannot be 
-# made for iOS)!
-# Prefixing the resource folder with the library is here just a trick to make it more convenient to use with Xcode (no 
-# renaming needed when the library resources are added, and easier to identify in the project explorer)
+# Packing resource file
 resources_output_dir="$framework_output_dir/Resources"
 mkdir -p "$resources_output_dir"
 
@@ -538,6 +530,7 @@ mkdir -p "$resources_output_dir"
 #   - not to be contained in the <ProjectName>.xcodeproj folder
 #   - not the file listing public headers
 #   - not the bootstrap file
+#   - not in a .bundle: The .bundle itself is considered as a single resource file
 # All those files are put in a common flat directory. Localized resources need a special treatment, see below. Note
 # that the exclusion patterns below do not remove directories (since they end up with /*), but since cp is used 
 # (and not cp -r) they won't be copied. Had we simply used "*/build*"-like patterns, then directories like */buildxyz
@@ -548,6 +541,7 @@ resource_files=(`find "$EXECUTION_DIR" \
     -not -path "*/build/*" \
     -not -path "*.xcodeproj/*" \
     -not -path "*.lproj/*" \
+    -not -path "*/*.bundle/*" \
     -not -name "*.m" \
     -not -name "*.mm" \
     -not -name "*.c" \
@@ -560,17 +554,25 @@ resource_files=(`find "$EXECUTION_DIR" \
     -not -name "$bootstrap_file"`)
 for resource_file in ${resource_files[@]}
 do
-    cp "$resource_file" "$resources_output_dir" &> /dev/null
-    
-    # Those files which could be copied are resources; check that their name begin with a prefix (strongly advised)
-    if [ "$?" -eq "0" ]; then
-        check_prefix "$resource_file" "$framework_name"
+    # .bundle directories are copied as is
+    resource_file_name=`basename $resource_file`
+    resource_file_extension=${resource_file_name##*.}
+
+    if [ "$resource_file_extension" = "bundle" ]; then
+        cp -r "$resource_file" "$framework_output_dir/$resource_file_name" &> /dev/null
+    else
+        cp "$resource_file" "$resources_output_dir" &> /dev/null
+
+        # Those files which could be copied are resources (not directories, e.g.); check that their name begin with a prefix (strongly advised)
+        if [ "$?" -eq "0" ]; then
+            check_prefix "$resource_file" "$framework_name"
+        fi
     fi
 done
 
 # Copy localized resources, preserving the directory structure
 echo "Copying localized resource files..."
-localized_resource_files=(`find . -path "*.lproj/*" -not -path "*/.*" -not -path "*/build/*"`)
+localized_resource_files=(`find . -path "*.lproj/*" -not -path "*/.*" -not -path "*/build/*" -not -path "*/*.bundle/*"`)
 for localized_resource_file in ${localized_resource_files[@]}
 do
     # Tokenize the path
@@ -602,8 +604,7 @@ rmdir "$resources_output_dir" 2> /dev/null
 if $param_source_files; then
     echo "Copying source code..."
 
-    # As for resources, prefixing the source folder with the framework name makes it more convenient to
-    # work with Xcode
+    # Create the source directory
     sources_output_dir="$framework_output_dir/Sources"
     mkdir -p "$sources_output_dir"
     
