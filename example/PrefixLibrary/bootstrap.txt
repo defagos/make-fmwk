@@ -1,2 +1,0 @@
-CustomLabel.m
-PrettyString.m

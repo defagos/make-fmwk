@@ -1,3 +1,0 @@
-CustomLabel.h
-PrettyString.h
-SimpleViewController.h

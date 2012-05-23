@@ -1,5 +1,0 @@
-build/
-StaticFrameworks/
-PrefixClientApp.xcodeproj/*.pbxuser
-PrefixClientApp.xcodeproj/*.mode1v3
-PrefixClientApp.xcodeproj/*.perspectivev3
