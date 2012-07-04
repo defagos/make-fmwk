@@ -285,6 +285,10 @@ fi
 # Create the output directory if it does not exist
 if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
+    if [ "$?" -ne "0" ]; then
+        echo "[Error] Cannot create output directory"
+        exit 1
+    fi
 fi
 
 # Log directory (same as build directory if not specified)
@@ -342,6 +346,10 @@ fi
 
 # Create the main framework directory
 mkdir -p "$framework_output_dir"
+if [ "$?" -ne "0" ]; then
+    echo "[Error] Cannot create static framework"
+    exit 1
+fi
 
 # Creation of the bootstrap code for selective forced linking (not required when the source code has been included;
 # in this case the linker will find everything it needs)
@@ -630,20 +638,20 @@ echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
 echo "<plist version=\"1.0\">" >> "$manifest_file"
 echo "<dict>" >> "$manifest_file"
-echo "	<key>Project compiled</key>" >> "$manifest_file"
-echo "	<string>$project_name</string>" >> "$manifest_file"
+echo "  <key>Project compiled</key>" >> "$manifest_file"
+echo "  <string>$project_name</string>" >> "$manifest_file"
 if [ ! -z "$param_code_version" ]; then
-    echo "	<key>Code version</key>" >> "$manifest_file"
-    echo "	<string>$param_code_version</string>" >> "$manifest_file"
+    echo "  <key>Code version</key>" >> "$manifest_file"
+    echo "  <string>$param_code_version</string>" >> "$manifest_file"
 fi
-echo "	<key>Configuration used</key>" >> "$manifest_file"
-echo "	<string>$configuration_name</string>" >> "$manifest_file"
-echo "	<key>iOS SDK version used</key>" >> "$manifest_file"
-echo "	<string>$sdk_version</string>" >> "$manifest_file"
-echo "	<key>make-fmwk version</key>" >> "$manifest_file"
-echo "	<string>$VERSION_NBR</string>" >> "$manifest_file"
-echo "	<key>Creation date and time</key>" >> "$manifest_file"
-echo "	<string>`date`</string>" >> "$manifest_file"
+echo "  <key>Configuration used</key>" >> "$manifest_file"
+echo "  <string>$configuration_name</string>" >> "$manifest_file"
+echo "  <key>iOS SDK version used</key>" >> "$manifest_file"
+echo "  <string>$sdk_version</string>" >> "$manifest_file"
+echo "  <key>make-fmwk version</key>" >> "$manifest_file"
+echo "  <string>$VERSION_NBR</string>" >> "$manifest_file"
+echo "  <key>Creation date and time</key>" >> "$manifest_file"
+echo "  <string>`date`</string>" >> "$manifest_file"
 
 # List all framework dependencies; those are created before running make_fmwk.sh by using the link_fmwk.sh script. The generated
 # symbolic links are always saved under ./StaticFrameworks
