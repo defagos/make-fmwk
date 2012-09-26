@@ -426,7 +426,7 @@ fi
 
 echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" \
-    $target_parameter "SYMROOT=$BUILD_DIR" "ARCHS=armv6 armv7" &> "$log_dir/$framework_full_name-device.buildlog"
+    $target_parameter "SYMROOT=$BUILD_DIR" "ARCHS=armv6 armv7 armv7s" &> "$log_dir/$framework_full_name-device.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "Device build failed. Check the logs"
     build_failure=true
