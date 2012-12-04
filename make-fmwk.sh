@@ -556,6 +556,7 @@ resource_files=(`find "$EXECUTION_DIR" \
     -not -name "*.cpp" \
     -not -name "*.h" \
     -not -name "*.pch" \
+    -not -name "Makefile" \
     -not -path "$public_headers_file" \
     -not -name "$public_headers_file" \
     -not -path "$bootstrap_file" \
