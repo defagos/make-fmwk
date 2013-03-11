@@ -392,7 +392,7 @@ if ! $param_source_files; then
             # Add a dummy class declaration and definition to the source file. This definition is added at the end of the file
             # to leave line numbers intact in comparison to the original source files (useful if the original code logs source
             # file line numbers for debugging purposes)
-            linker_class_interface="\n@interface ${file_name_clean}_Linker\n+ (void)link;\n@end\n"
+            linker_class_interface="\n@interface ${file_name_clean}_Linker : NSObject\n+ (void)link;\n@end\n"
             linker_class_implementation="\n@implementation ${file_name_clean}_Linker\n+ (void)link {}\n@end\n"
             echo -e "$linker_class_interface" >> "$bootstrapped_path"
             echo -e "$linker_class_implementation" >> "$bootstrapped_path"
