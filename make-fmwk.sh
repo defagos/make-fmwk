@@ -632,6 +632,11 @@ if $param_source_files; then
     done
 fi
 
+# Extract the deployment target information. This information is important since unresolved symbols vary depending on which iOS
+# minimal version is required. This can lead to issues when linking static libraries with a project if their deployment targets
+# are not compatible
+deployment_target=`xcodebuild -showBuildSettings | grep IPHONEOS_DEPLOYMENT_TARGET | sed -E 's/.*= (.*)/\1/g'`
+
 # Add a manifest file
 echo "Creating manifest file..."
 manifest_file="$dot_framework_output_dir/$framework_name-staticframework-Info.plist"
@@ -649,24 +654,12 @@ echo "  <key>Configuration used</key>" >> "$manifest_file"
 echo "  <string>$configuration_name</string>" >> "$manifest_file"
 echo "  <key>iOS SDK version used</key>" >> "$manifest_file"
 echo "  <string>$sdk_version</string>" >> "$manifest_file"
+echo "  <key>Deployment target</key>" >> "$manifest_file"
+echo "  <string>$deployment_target</string>" >> "$manifest_file"
 echo "  <key>make-fmwk version</key>" >> "$manifest_file"
 echo "  <string>$VERSION_NBR</string>" >> "$manifest_file"
 echo "  <key>Creation date and time</key>" >> "$manifest_file"
 echo "  <string>`date`</string>" >> "$manifest_file"
-
-# List all framework dependencies; those are created before running make_fmwk.sh by using the link_fmwk.sh script. The generated
-# symbolic links are always saved under ./StaticFrameworks
-if [ -d "./StaticFrameworks" ]; then
-    echo "  <key>Static framework dependencies</key>" >> "$manifest_file"
-    echo "  <array>" >> "$manifest_file"
-    static_framework_dependencies=(`ls -1 "./StaticFrameworks"`)
-    for static_framework_dependency in ${static_framework_dependencies[@]}
-    do
-        echo "    <string>$static_framework_dependency</string>" >> "$manifest_file"
-    done
-    echo "  </array>" >> "$manifest_file"
-fi
-
 echo "</dict>" >> "$manifest_file"
 echo "</plist>" >> "$manifest_file"
 
