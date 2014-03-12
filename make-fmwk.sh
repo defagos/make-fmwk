@@ -6,6 +6,8 @@ SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`
 BUILD_DIR="$EXECUTION_DIR/build"
+BUILD_DIR_32_BITS="$BUILD_DIR/32-bits"
+BUILD_DIR_64_BITS="$BUILD_DIR/64-bits"
 DEFAULT_BOOTSTRAP_FILE="$EXECUTION_DIR/bootstrap.txt"
 DEFAULT_OUTPUT_DIR="$HOME/StaticFrameworks"
 DEFAULT_PUBLIC_HEADERS_FILE="$EXECUTION_DIR/publicHeaders.txt"
@@ -413,22 +415,39 @@ if ! $param_source_files; then
     echo -e "$bootstrap_function" >> "$bootstrap_output_file"
 fi
 
-# Run the builds (with bootstrap code if any). The build directory (SYMROOT) overrides the one in the .pbxproj. This way we do
-# not have to parse the .pbxproj to find the SYMROOT to use with the lipo command (see below)
+# Run the builds (with bootstrap code if any). Overrides some project settings so that all binary flavors are built. The deployment target must match the kind of
+# binary built, otherwise compilation fails
 build_failure=false
-echo "Building $project_name simulator binaries for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" \
-    $target_parameter "SYMROOT=$BUILD_DIR" "ARCHS=i386" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-simulator.buildlog" 
+
+echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-i386" "ARCHS=i386" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-i386.buildlog" 
 if [ "$?" -ne "0" ]; then
-    echo "Simulator build failed. Check the logs"
+    echo "i386 build failed. Check the logs"
     build_failure=true
 fi
 
-echo "Building $project_name device binaries for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" \
-    $target_parameter "SYMROOT=$BUILD_DIR" "ARCHS=armv6 armv7 armv7s" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-device.buildlog"
+echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-armv" "ARCHS=armv6 armv7 armv7s" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-armv.buildlog"
 if [ "$?" -ne "0" ]; then
-    echo "Device build failed. Check the logs"
+    echo "armv build failed. Check the logs"
+    build_failure=true
+fi
+
+echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-x64" "ARCHS=x86_64" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-x64.buildlog" 
+if [ "$?" -ne "0" ]; then
+    echo "x64 build failed. Check the logs"
+    build_failure=true
+fi
+
+echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-arm64" "ARCHS=arm64" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-arm64.buildlog"
+if [ "$?" -ne "0" ]; then
+    echo "arm64 build failed. Check the logs"
     build_failure=true
 fi
 
@@ -474,8 +493,7 @@ mkdir -p "$headers_output_dir"
 # Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
 # framework bundle, the universal binaries must bear the exact same name as the framework
 echo "Packing binaries..."
-lipo -create "$BUILD_DIR/$configuration_name-iphonesimulator/"*.a "$BUILD_DIR/$configuration_name-iphoneos/"*.a \
-    -o "$dot_framework_output_dir/$framework_name"
+lipo -create "$BUILD_DIR_32_BITS/"*.a "$BUILD_DIR_64_BITS/"*.a -o "$dot_framework_output_dir/$framework_name"
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
