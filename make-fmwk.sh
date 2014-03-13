@@ -24,6 +24,7 @@ param_output_dir=""
 param_project_name=""
 param_public_headers_file=""
 param_sdk_version=""
+param_cleanup_build_products=false
 param_target_name=""
 
 log_dir=""
@@ -98,6 +99,7 @@ usage() {
     echo "   -k:                    By default the compilation is made against the most"
     echo "                          recent version of the iOS SDK. Use this option to"
     echo "                          use a specific version number, e.g. 4.0"
+    echo "   -K:                    Cleanup build products if successful"
     echo "   -l:                    Output directory for log files (build directory"
     echo "                          if omitted)"
     echo "   -L:                    Lock the .staticframework output files to prevent from"
@@ -142,7 +144,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:l:Lno:p:st:u:v OPT; do
+while getopts b:f:hk:Kl:Lno:p:st:u:v OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -156,6 +158,9 @@ while getopts b:f:hk:l:Lno:p:st:u:v OPT; do
             ;;
         k)
             param_sdk_version="$OPTARG"
+            ;;
+        K)
+            param_cleanup_build_products=true
             ;;
         l)
             param_log_dir="$OPTARG"
@@ -684,6 +689,12 @@ echo "</plist>" >> "$manifest_file"
 # Lock all .staticframework contents to prevent the user from accidentally editing them within Xcode
 if $param_lock_output; then
     find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod a-w {} \;
+fi
+
+# Cleanup build products
+if $param_cleanup_build_products; then
+    echo "Cleanup build files..."
+    rm -rf "$BUILD_DIR"
 fi
 
 # Done
