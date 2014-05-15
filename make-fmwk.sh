@@ -426,7 +426,7 @@ build_failure=false
 
 echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-i386" "ARCHS=i386" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-i386.buildlog" 
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-i386" "ARCHS=i386" "VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "i386 build failed. Check the logs"
     build_failure=true
@@ -434,7 +434,7 @@ fi
 
 echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-armv" "ARCHS=armv6 armv7 armv7s" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-armv.buildlog"
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-armv" "ARCHS=armv6 armv7 armv7s" "VALID_ARCHS=armv6 armv7 armv7s" &> "$log_dir/$framework_full_name-armv.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "armv build failed. Check the logs"
     build_failure=true
@@ -442,7 +442,7 @@ fi
 
 echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-x64" "ARCHS=x86_64" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-x64.buildlog" 
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-x64" "ARCHS=x86_64" "VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "x64 build failed. Check the logs"
     build_failure=true
@@ -450,7 +450,7 @@ fi
 
 echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
 xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-arm64" "ARCHS=arm64" "ONLY_ACTIVE_ARCH=No" &> "$log_dir/$framework_full_name-arm64.buildlog"
+    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-arm64" "ARCHS=arm64" "VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "arm64 build failed. Check the logs"
     build_failure=true
