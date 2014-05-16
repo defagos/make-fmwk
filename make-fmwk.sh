@@ -27,6 +27,7 @@ param_sdk_version=""
 param_cleanup_build_products=false
 param_target_name=""
 param_scheme_name=""
+param_force_xcodebuild=false
 
 build_tool="xcodebuild"
 log_dir=""
@@ -78,12 +79,14 @@ usage() {
     echo "still change the output directory using the -o option. Other build products"
     echo "are still saved under the build directory."
     echo ""
-    echo "If xctool is available on your system, it will be used instead of xcodebuild"
+    echo "If xctool is available on your system, it will be used instead of xcodebuild. The"
+    echo "-t parameter is currently not supported for xctool, if you really need it force"
+    echo "xcodebuild to be used by setting the -X flag"
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
     echo "         [-b bootstrap_file] [-K] [-n] [-s] [-S scheme_name] [-v] [-h] [-L]"
-    echo "         configuration_name"
+    echo "         [-X] configuration_name"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -135,6 +138,7 @@ usage() {
     echo "                          been compiled. Added to framework.info and appended"
     echo "                          to the framework name if -n is not used"
     echo "   -v:                    Print the script version number"
+    echo "   -X:                    Force using xcodebuild"
     echo ""
 }
 
@@ -157,7 +161,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:Kl:Lno:p:sS:t:u:v OPT; do
+while getopts b:f:hk:Kl:Lno:p:sS:t:u:vX OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -206,6 +210,9 @@ while getopts b:f:hk:Kl:Lno:p:sS:t:u:v OPT; do
             echo "$SCRIPT_NAME version $VERSION_NBR"
             exit 0
             ;;
+        X)
+            param_force_xcodebuild=true
+            ;;
         \?)
             usage
             exit 1
@@ -230,11 +237,13 @@ if [ -z "$configuration_name" ]; then
     exit 1
 fi
 
-# Use xctool when available
-which xctool > /dev/null
-if [ "$?" -eq "0" ]; then
-    echo "[INFO] xtool has been found and will be used for compilation"
-    build_tool="xctool"
+if ! $param_force_xcodebuild; then
+    # Use xctool when available
+    which xctool > /dev/null
+    if [ "$?" -eq "0" ]; then
+        echo "[INFO] xtool has been found and will be used for compilation"
+        build_tool="xctool"
+    fi
 fi
 
 # Public headers file
