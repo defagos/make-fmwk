@@ -5,9 +5,9 @@ VERSION_NBR=1.5
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`
-BUILD_DIR="$EXECUTION_DIR/build"
-BUILD_DIR_32_BITS="$BUILD_DIR/32-bits"
-BUILD_DIR_64_BITS="$BUILD_DIR/64-bits"
+BUILD_DIR_COMMON="$EXECUTION_DIR/build"
+BUILD_DIR_32_BITS="$BUILD_DIR_COMMON/32-bits"
+BUILD_DIR_64_BITS="$BUILD_DIR_COMMON/64-bits"
 DEFAULT_BOOTSTRAP_FILE="$EXECUTION_DIR/bootstrap.txt"
 DEFAULT_OUTPUT_DIR="$HOME/StaticFrameworks"
 DEFAULT_PUBLIC_HEADERS_FILE="$EXECUTION_DIR/publicHeaders.txt"
@@ -334,7 +334,7 @@ fi
 if [ ! -z "$param_log_dir" ]; then
     log_dir="$param_log_dir"
 else
-    log_dir="$BUILD_DIR"
+    log_dir="$BUILD_DIR_COMMON"
 fi
 
 # Create the log directory if it does not exist
@@ -495,7 +495,7 @@ build_failure=false
 
 echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
 eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
-    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
+    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "i386 build failed. Check the logs"
     build_failure=true
@@ -503,7 +503,7 @@ fi
 
 echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
 eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
-    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-armv.buildlog"
+    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-armv.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "armv build failed. Check the logs"
     build_failure=true
@@ -511,7 +511,7 @@ fi
 
 echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
 eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
-    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
+    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "x64 build failed. Check the logs"
     build_failure=true
@@ -519,7 +519,7 @@ fi
 
 echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
 eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
-    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
+    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "arm64 build failed. Check the logs"
     build_failure=true
@@ -763,7 +763,7 @@ fi
 # Cleanup build products
 if $param_cleanup_build_products; then
     echo "Cleanup build files..."
-    rm -rf "$BUILD_DIR"
+    rm -rf "$BUILD_DIR_COMMON"
 fi
 
 # Done
