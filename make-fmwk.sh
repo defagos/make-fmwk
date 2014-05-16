@@ -28,6 +28,7 @@ param_cleanup_build_products=false
 param_target_name=""
 param_scheme_name=""
 
+build_tool="xcodebuild"
 log_dir=""
 output_dir=""
 project_name=""
@@ -76,6 +77,8 @@ usage() {
     echo " ~/StaticFrameworks directory acting as a framework repository. You can"
     echo "still change the output directory using the -o option. Other build products"
     echo "are still saved under the build directory."
+    echo ""
+    echo "If xctool is available on your system, it will be used instead of xcodebuild"
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
@@ -225,6 +228,13 @@ done
 if [ -z "$configuration_name" ]; then
     usage
     exit 1
+fi
+
+# Use xctool when available
+which xctool > /dev/null
+if [ "$?" -eq "0" ]; then
+    echo "[INFO] xtool has been found and will be used for compilation"
+    build_tool="xctool"
 fi
 
 # Public headers file
@@ -475,7 +485,7 @@ fi
 build_failure=false
 
 echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
     ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "i386 build failed. Check the logs"
@@ -483,7 +493,7 @@ if [ "$?" -ne "0" ]; then
 fi
 
 echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
     ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-armv.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "armv build failed. Check the logs"
@@ -491,7 +501,7 @@ if [ "$?" -ne "0" ]; then
 fi
 
 echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
+eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
     ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "x64 build failed. Check the logs"
@@ -499,7 +509,7 @@ if [ "$?" -ne "0" ]; then
 fi
 
 echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
+eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
     ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "arm64 build failed. Check the logs"
