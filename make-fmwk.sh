@@ -26,11 +26,17 @@ param_public_headers_file=""
 param_sdk_version=""
 param_cleanup_build_products=false
 param_target_name=""
+param_scheme_name=""
 
 log_dir=""
 output_dir=""
 project_name=""
 sdk_version=""
+
+target_section=false
+default_target_name=""
+scheme_section=false
+default_scheme_name=""
 
 # User manual
 usage() {
@@ -43,6 +49,9 @@ usage() {
     echo ".staticframeworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
     echo "process are packed into the framework itself (as a plist manifest file)."
+    echo ""
+    echo "You can build a .staticframework for a specific scheme or target. If you provide"
+    echo "none, the script uses the first listed scheme (if any), otherwise the first target"
     echo ""
     echo "A file listing all headers to be made public is required. Based on this file,"
     echo "this script also generate a global framework header, usually to be imported in"
@@ -70,7 +79,8 @@ usage() {
     echo ""
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
-    echo "         [-b bootstrap_file] [-n] [-s] [-v] [-h] [-L] configuration_name"
+    echo "         [-b bootstrap_file] [-K] [-n] [-s] [-S scheme_name] [-v] [-h] [-L]"
+    echo "         configuration_name"
     echo ""
     echo "Mandatory parameters:"
     echo "   configuration_name     The name of the configuration to use"
@@ -116,8 +126,8 @@ usage() {
     echo "                          (without the .xcodeproj extension)"
     echo "   -s:                    Pack the complete source code into the static framework."
     echo "                          Useful for debugging purposes"
-    echo "   -t:                    Target to be used. If not specified the first target"
-    echo "                          will be built"
+    echo "   -S:                    The scheme to use"
+    echo "   -t:                    The target to use"
     echo "   -u                     Tag identifying the version of the code which has"
     echo "                          been compiled. Added to framework.info and appended"
     echo "                          to the framework name if -n is not used"
@@ -144,7 +154,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:Kl:Lno:p:st:u:v OPT; do
+while getopts b:f:hk:Kl:Lno:p:sS:t:u:v OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -179,6 +189,9 @@ while getopts b:f:hk:Kl:Lno:p:st:u:v OPT; do
             ;;
         s)
             param_source_files=true
+            ;;
+        S)
+            param_scheme_name="$OPTARG"
             ;;
         t)
             param_target_name="$OPTARG"
@@ -299,10 +312,10 @@ if [ ! -d "$output_dir" ]; then
 fi
 
 # Log directory (same as build directory if not specified)
-if [ -z "$param_log_dir" ]; then
-    log_dir="$BUILD_DIR"
-else
+if [ ! -z "$param_log_dir" ]; then
     log_dir="$param_log_dir"
+else
+    log_dir="$BUILD_DIR"
 fi
 
 # Create the log directory if it does not exist
@@ -310,9 +323,46 @@ if [ ! -d "$log_dir" ]; then
     mkdir -p "$log_dir"
 fi
 
-# Target parameter
-if [ ! -z "$param_target_name" ]; then
-    target_parameter="-target $param_target_name"
+# Cannot have both a parameter and a scheme set (the scheme specifies the target to build)
+if [[ ! -z "$param_scheme_name" && ! -z "$param_target_name" ]]; then
+    echo "[Error] A scheme and a target cannot be simultaneously provided"
+    exit 1
+fi
+
+# Extract default target and scheme (trim whitespaces at begin / end of each line)
+project_info_arr=(`xcodebuild -project $project_name.xcodeproj -list | sed -e 's/^ *//' -e 's/ *$//'`)
+for project_info_line in ${project_info_arr[@]}
+do
+    if [ "$project_info_line" = "Targets:" ]; then
+        target_section=true
+    elif [ "$project_info_line" = "Schemes:" ]; then
+        scheme_section=true
+    elif $target_section; then
+        default_target_name="$project_info_line"
+        target_section=false
+    elif $scheme_section; then
+        default_scheme_name="$project_info_line"
+        scheme_section=false
+    fi
+done
+
+# Target and scheme resolution:
+#   - if a scheme has been provided, use it
+#   - if a target has been provided, use it
+#   - if neither a scheme nor a target have been provided, use the default scheme, if any, otherwise the default target
+if [ ! -z "$param_scheme_name" ]; then
+    scheme_name="$param_scheme_name"
+elif [ ! -z "$param_target_name" ]; then
+    target_name="$param_target_name"
+elif [ ! -z "$default_scheme_name" ]; then
+    scheme_name="$default_scheme_name"
+    echo "[Info] Use $default_scheme_name as default scheme for compilation"
+elif [ ! -z "$default_target_name" ]; then
+    target_name="$default_target_name"
+    echo "[Info] Use $default_target_name as default target for compilation"
+else
+    echo "[Error] No scheme or target available"
+    exit 1
 fi
 
 # Framework name matches project name; by default the code version (if available) is appended, except
@@ -425,32 +475,32 @@ fi
 build_failure=false
 
 echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-i386" "ARCHS=i386" "VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
+eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "i386 build failed. Check the logs"
     build_failure=true
 fi
 
 echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=5.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_32_BITS" "PRODUCT_NAME=Static-armv" "ARCHS=armv6 armv7 armv7s" "VALID_ARCHS=armv6 armv7 armv7s" &> "$log_dir/$framework_full_name-armv.buildlog"
+eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-armv.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "armv build failed. Check the logs"
     build_failure=true
 fi
 
 echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphonesimulator$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-x64" "ARCHS=x86_64" "VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
+eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
+    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
 if [ "$?" -ne "0" ]; then
     echo "x64 build failed. Check the logs"
     build_failure=true
 fi
 
 echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-xcodebuild -configuration "$configuration_name" -project "$project_name.xcodeproj" -sdk "iphoneos$sdk_version" "IPHONEOS_DEPLOYMENT_TARGET=7.0" \
-    $target_parameter "TARGET_BUILD_DIR=$BUILD_DIR_64_BITS" "PRODUCT_NAME=Static-arm64" "ARCHS=arm64" "VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
+eval "xcodebuild -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
+    ${scheme_name:+-scheme $scheme_name} TARGET_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
 if [ "$?" -ne "0" ]; then
     echo "arm64 build failed. Check the logs"
     build_failure=true
