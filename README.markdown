@@ -46,7 +46,7 @@ Here is how you usually should setup a project so that `make-fmwk` can be run on
 
 * Open an iOS application project
 * Add the `.staticframework` of your library to your project (by adding it to your project file tree, or by drag and drop)
-* When you need to include a library header file, use the `#import <file.h>` syntax. `make-fmwk` also creates a global header file from the public headers declared by the library, I usually recommend adding this file to your project precompiled header file
+* When you need to include a library header file, use the `#import <file.h>` syntax. `make-fmwk` also creates a global header file from the public headers declared by the library, I usually recommend adding this file to your project precompiled header file. If your project contains a header wuth the same name, the generated content will be prepended to it
 
 ### Working with static framework versions
 
