@@ -16,6 +16,7 @@ FORCE_LINK_TAG="FILE_FORCE_LINK"
 # Global variables
 param_bootstrap_file=""
 param_code_version=""
+param_framework_name=""
 param_source_files=false
 param_log_dir=""
 param_lock_output=false
@@ -52,7 +53,7 @@ usage() {
     echo "file can contain at most one binary per platform. Details about the compilation"
     echo "process are packed into the framework itself (as a plist manifest file). The"
     echo "framework name matches the scheme or target name (if available), otherwise the"
-    echo "project name."
+    echo "project name. You can also provide an arbitrary name using the -N option."
     echo ""
     echo "You can build a .staticframework for a specific scheme or target. If you provide"
     echo "none, the script uses the first listed scheme (if any), otherwise the first target"
@@ -127,6 +128,9 @@ usage() {
     echo "                          to be bound to specific framework versions. If -n"
     echo "                          is used, the version number is not appended (if the"
     echo "                          -t option was not used, -n has no effect)"
+    echo "   -N:                    The name of the .staticframework (if not specified,"
+    echo "                          defaults to scheme, target or project name, depending"
+    echo "                          on which is available"
     echo "   -o                     Output directory where the .staticframework will be"
     echo "                          saved. If not specified, ~/StaticFrameworks is used"
     echo "   -p:                    If you have multiple projects in the same directory,"
@@ -163,7 +167,7 @@ check_prefix() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:Kl:Lno:p:sS:t:u:vX OPT; do
+while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -189,6 +193,9 @@ while getopts b:f:hk:Kl:Lno:p:sS:t:u:vX OPT; do
             ;;
         n)
             param_omit_version_in_name=true
+            ;;
+        N)
+            param_framework_name="$OPTARG"
             ;;
         o)
             param_output_dir="$OPTARG"
@@ -387,7 +394,9 @@ else
 fi
 
 # The framework name is set using the most specific information available (scheme, then target, then project name)
-if [ ! -z "$scheme_name" ]; then
+if [ ! -z "$param_framework_name" ]; then
+    framework_name="$param_framework_name"
+elif [ ! -z "$scheme_name" ]; then
     framework_name="$scheme_name"
 elif [ ! -z "$target_name" ]; then
     framework_name="$target_name"
