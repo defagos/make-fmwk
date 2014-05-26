@@ -774,6 +774,14 @@ if [ ! -z "$param_code_version" ]; then
     echo "  <key>Code version</key>" >> "$manifest_file"
     echo "  <string>$param_code_version</string>" >> "$manifest_file"
 fi
+if [ ! -z "$scheme_name" ]; then
+    echo "  <key>Scheme name</key>" >> "$manifest_file"
+    echo "  <string>$scheme_name</string>" >> "$manifest_file"
+fi
+if [ ! -z "$target_name" ]; then
+    echo "  <key>Target name</key>" >> "$manifest_file"
+    echo "  <string>$target_name</string>" >> "$manifest_file"
+fi
 echo "  <key>Configuration used</key>" >> "$manifest_file"
 echo "  <string>$configuration_name</string>" >> "$manifest_file"
 echo "  <key>iOS SDK version used</key>" >> "$manifest_file"
