@@ -50,7 +50,9 @@ usage() {
     echo ""
     echo ".staticframeworks are built on a per-configuration basis since a universal binary"
     echo "file can contain at most one binary per platform. Details about the compilation"
-    echo "process are packed into the framework itself (as a plist manifest file)."
+    echo "process are packed into the framework itself (as a plist manifest file). The"
+    echo "framework name matches the scheme or target name (if available), otherwise the"
+    echo "project name."
     echo ""
     echo "You can build a .staticframework for a specific scheme or target. If you provide"
     echo "none, the script uses the first listed scheme (if any), otherwise the first target"
@@ -384,9 +386,16 @@ else
     exit 1
 fi
 
-# Framework name matches project name; by default the code version (if available) is appended, except
-# if this behavior is overriden (no warning, the user knows what shes is doing)
-framework_name="$project_name"
+# The framework name is set using the most specific information available (scheme, then target, then project name)
+if [ ! -z "$scheme_name" ]; then
+    framework_name="$scheme_name"
+elif [ ! -z "$target_name" ]; then
+    framework_name="$target_name"
+else
+    framework_name="$project_name"
+fi
+
+# Append the configuration name and the version number
 if [ ! -z "$param_code_version" ]; then
     if $param_omit_version_in_name; then
         framework_full_name="$framework_name-$configuration_name"
