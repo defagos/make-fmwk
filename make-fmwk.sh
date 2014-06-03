@@ -757,6 +757,18 @@ if $param_source_files; then
     done
 fi
 
+# Create the modulemap file (see http://clang.llvm.org/docs/Modules.html)
+echo "Creating modulemap file..."
+modules_dir="$dot_framework_output_dir/Modules"
+mkdir "$modules_dir"
+
+modules_file="$modules_dir/module.modulemap"
+echo "framework module $framework_name {" > "$modules_file"
+echo "  umbrella header \"$framework_name.h\"" >> "$modules_file"
+echo "  requires objc" >> "$modules_file"
+echo "  export *" >> "$modules_file"
+echo "}" >> "$modules_file"
+
 # Extract the deployment target information. This information is important since unresolved symbols vary depending on which iOS
 # minimal version is required. This can lead to issues when linking static libraries with a project if their deployment targets
 # are not compatible
