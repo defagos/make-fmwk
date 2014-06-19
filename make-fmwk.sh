@@ -411,6 +411,8 @@ if [ "${#valid_configuration_names[@]}" -eq "0" ]; then
     exit 1
 fi
 
+# TODO: If primary conf not in valid confs, use the first one
+
 # Target and scheme resolution:
 #   - if a scheme has been provided, use it
 #   - if a target has been provided, use it
@@ -612,8 +614,6 @@ if $build_failure; then
     exit 1
 fi
 
-exit 1
-
 # Create .framework directory
 dot_framework_output_dir="$framework_output_dir/$framework_name.framework"
 
@@ -629,10 +629,25 @@ dot_framework_output_dir="$framework_output_dir/$framework_name.framework"
 headers_output_dir="$dot_framework_output_dir/Headers"
 mkdir -p "$headers_output_dir"
 
-# Packing static libraries as universal binaries. For the linker to be able to find the static unversal binaries in the 
-# framework bundle, the universal binaries must bear the exact same name as the framework
+# Packing static libraries as universal binaries. For the linker to be able to find the static universal binaries in the 
+# framework bundle, one universal binary (we here use the binary corresponding to the primary configuration we identified) 
+# must bear the exact same name as the framework. Other binaries NameSuffix can be linked against using -framework,Suffix,
+# see ld documentation. Note that the the suffix is case-insensitive, i.e. -framework,suffix or -framework,suffiX work as
+# well, for example
 echo "Packing binaries..."
-lipo -create "$BUILD_DIR_32_BITS/"*.a "$BUILD_DIR_64_BITS/"*.a -o "$dot_framework_output_dir/$framework_name"
+for configuration_name in ${valid_configuration_names[@]}
+do
+    configuration_build_dir_32_bits="$BUILD_DIR_32_BITS/$configuration_name"
+    configuration_build_dir_64_bits="$BUILD_DIR_64_BITS/$configuration_name"
+
+    if [ "$configuration_name" == "$primary_configuration_name" ]; then
+        binary_name="$framework_name"
+    else
+        binary_name="$framework_name$configuration_name"
+    fi
+
+    lipo -create "$configuration_build_dir_32_bits/"*.a "$configuration_build_dir_64_bits/"*.a -o "$dot_framework_output_dir/$binary_name"
+done
 
 # Load the public header file list into an array (remove blank lines if anys)
 echo "Copying public header files..."
