@@ -40,6 +40,8 @@ target_section=false
 default_target_name=""
 scheme_section=false
 default_scheme_name=""
+configuration_section=false
+primary_configuration_name=""
 
 # User manual
 usage() {
@@ -89,10 +91,10 @@ usage() {
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
     echo "         [-b bootstrap_file] [-K] [-n] [-s] [-S scheme_name] [-v] [-h] [-L]"
-    echo "         [-X] configuration_name"
+    echo "         [-X] [configuration_name ...]"
     echo ""
-    echo "Mandatory parameters:"
-    echo "   configuration_name     The name of the configuration to use"
+    echo "Optional parameters:"
+    echo "   configuration_name     The names of the configurations to use"
     echo ""
     echo "Options:"
     echo "   -b:                    Path to the bootstrap file. This file lists"
@@ -229,23 +231,14 @@ while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
     esac
 done
 
-# Read the remaining mandatory parameters
+# Read specified configurations
+configuration_names=()
 shift `expr $OPTIND - 1`
 for arg in "$@"; do
-    if [ -z "$configuration_name" ]; then
-        configuration_name="$arg"
-    else
-       usage
-       exit 1
-    fi
+    configuration_names+=("$arg")
 done
 
-# If the last argument is not filled, incomplete command line
-if [ -z "$configuration_name" ]; then
-    usage
-    exit 1
-fi
-
+# xctool
 if ! $param_force_xcodebuild; then
     # Use xctool when available
     which xctool > /dev/null
@@ -357,7 +350,8 @@ if [[ ! -z "$param_scheme_name" && ! -z "$param_target_name" ]]; then
     exit 1
 fi
 
-# Extract default target and scheme (trim whitespaces at begin / end of each line)
+# Extract default target, scheme and available configuration list (trim whitespaces at begin / end of each line)
+available_configuration_names=()
 project_info_arr=(`xcodebuild -project $project_name.xcodeproj -list | sed -e 's/^ *//' -e 's/ *$//'`)
 for project_info_line in ${project_info_arr[@]}
 do
@@ -365,14 +359,57 @@ do
         target_section=true
     elif [ "$project_info_line" = "Schemes:" ]; then
         scheme_section=true
+    elif [ "$project_info_line" = "Build Configurations:" ]; then
+        configuration_section=true
+    elif [[ "$project_info_line" == "If no build configuration"* ]]; then
+        configuration_section=false
+        # Parse 'If no build configuration is specified and -scheme is not passed then "Primary configuration name" is used.''
+        primary_configuration_name=`echo "$project_info_line" | sed -E 's/^.*"(.*)".*$/\1/g'`
     elif $target_section; then
         default_target_name="$project_info_line"
         target_section=false
     elif $scheme_section; then
         default_scheme_name="$project_info_line"
         scheme_section=false
+    elif $configuration_section; then
+        if [ ! -z "$project_info_line" ]; then
+            available_configuration_names+=("$project_info_line")
+        fi
     fi
 done
+
+# If no configuration specified, use them all
+if [ "${#configuration_names[@]}" -eq "0" ]; then
+    valid_configuration_names=("${available_configuration_names[@]}")
+# Otherwise check against available configurations
+else
+    valid_configuration_names=()
+    for configuration_name in ${configuration_names[@]}
+    do
+        # Check whether the configuration is available or not
+        found=false
+        for available_configuration_name in ${available_configuration_names[@]}
+        do
+            if [ "$configuration_name" == "$available_configuration_name" ]; then
+                found=true
+                break
+            fi
+        done
+
+        if ! $found; then
+            echo "[INFO] The configuration '$configuration_name' does not exist. Skipped" 
+            continue
+        fi
+
+        valid_configuration_names+=("$configuration_name")
+    done
+fi
+
+# At least one valid configuration must be found
+if [ "${#valid_configuration_names[@]}" -eq "0" ]; then
+    echo "[ERROR] No valid configuration found"
+    exit 1
+fi
 
 # Target and scheme resolution:
 #   - if a scheme has been provided, use it
@@ -404,17 +441,17 @@ else
     framework_name="$project_name"
 fi
 
-# Append the configuration name and the version number
+# Append the version number
 if [ ! -z "$param_code_version" ]; then
     if $param_omit_version_in_name; then
-        framework_full_name="$framework_name-$configuration_name"
+        framework_full_name="$framework_name"
     else
-        framework_full_name="$framework_name-$param_code_version-$configuration_name"
+        framework_full_name="$framework_name-$param_code_version"
     fi
 # Warns if no version specified (good practice)
 else
     echo "[Info] You should provide a code version for better traceability; use the -u option"
-    framework_full_name="$framework_name-$configuration_name"
+    framework_full_name="$framework_name"
 fi
 
 # If sources are packaged within the framework, appends an additional extension
@@ -512,37 +549,44 @@ fi
 # binary built, otherwise compilation fails
 build_failure=false
 
-echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
-    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-i386.buildlog" 
-if [ "$?" -ne "0" ]; then
-    echo "i386 build failed. Check the logs"
-    build_failure=true
-fi
+# Build for each configuration
+for configuration_name in ${valid_configuration_names[@]}
+do
+    configuration_build_dir_32_bits="$BUILD_DIR_32_BITS/$configuration_name"
+    configuration_build_dir_64_bits="$BUILD_DIR_64_BITS/$configuration_name"
 
-echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
-    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_32_BITS' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-armv.buildlog"
-if [ "$?" -ne "0" ]; then
-    echo "armv build failed. Check the logs"
-    build_failure=true
-fi
+    echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+        ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_32_bits' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-$configuration_name-i386.buildlog" 
+    if [ "$?" -ne "0" ]; then
+        echo "[INFO] i386 build failed. Check the logs"
+        build_failure=true
+    fi
 
-echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
-    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-x64.buildlog" 
-if [ "$?" -ne "0" ]; then
-    echo "x64 build failed. Check the logs"
-    build_failure=true
-fi
+    echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
+        ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_32_bits' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-$configuration_name-armv.buildlog"
+    if [ "$?" -ne "0" ]; then
+        echo "[INFO] armv build failed. Check the logs"
+        build_failure=true
+    fi
 
-echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
-eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
-    ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$BUILD_DIR_64_BITS' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-arm64.buildlog"
-if [ "$?" -ne "0" ]; then
-    echo "arm64 build failed. Check the logs"
-    build_failure=true
-fi
+    echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
+        ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_64_bits' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-$configuration_name-x64.buildlog" 
+    if [ "$?" -ne "0" ]; then
+        echo "[INFO] x64 build failed. Check the logs"
+        build_failure=true
+    fi
+
+    echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
+        ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_64_bits' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-$configuration_name-arm64.buildlog"
+    if [ "$?" -ne "0" ]; then
+        echo "[INFO] arm64 build failed. Check the logs"
+        build_failure=true
+    fi
+done
 
 # Restore the original source code without bootstrapping code (only if source code not bundled, see above)
 if ! $param_source_files; then
@@ -567,6 +611,8 @@ fi
 if $build_failure; then
     exit 1
 fi
+
+exit 1
 
 # Create .framework directory
 dot_framework_output_dir="$framework_output_dir/$framework_name.framework"
@@ -795,8 +841,6 @@ if [ ! -z "$target_name" ]; then
     echo "  <key>Target name</key>" >> "$manifest_file"
     echo "  <string>$target_name</string>" >> "$manifest_file"
 fi
-echo "  <key>Configuration used</key>" >> "$manifest_file"
-echo "  <string>$configuration_name</string>" >> "$manifest_file"
 echo "  <key>iOS SDK version used</key>" >> "$manifest_file"
 echo "  <string>$sdk_version</string>" >> "$manifest_file"
 echo "  <key>Deployment target</key>" >> "$manifest_file"
