@@ -17,14 +17,14 @@ Usually, to avoid these drawbacks, projects directly import the source code of a
     
 Though there is no way to build a framework around a static library using an official Xcode template (alternatives exist, see e.g. https://github.com/kstenerud/iOS-Universal-Framework), it is still possible to package binaries, headers and resources for easier reuse. This is just what `make-fmwk` is made for.
 
-The following is inspired by Pete Goodliffe's article published on accu.org: http://accu.org/index.php/articles/1594
+The following is inspired by [Pete Goodliffe's article published on accu.org](http://accu.org/index.php/articles/1594)
 
 ### Background
 
 When a standard `.framework` directory (created using the Xcode template for MacOS) is added to Xcode, two things happen:
 
-* Xcode looks for a dynamic library file located at the root of this directory, and bearing the same name as the `.framework`
-* Xcode also looks for a `Headers` directory containing the headers defining the framework public interface. These can then be imported by clients using `#import <framework_name/header_name.h>`. More precisely, the structure of a MacOS framework is made of symbolic links and directories to handle various versions of a library within the same `.framework`. Refer to the MacOS framework programming guide for more information.
+* The linker receives a `-framework FrameworkName` flag, and the parent directory of the framework is added to the framework lookup path. When linking, the linker looks for a binary bearing the same name as the `.framework` and contained within it. If the `-framework FrameworkName,Suffix` syntax is used instead, the linker looks for a binary having the same name as the `.framework` followed by the given suffix, in this example `FrameworkNameSuffix`. This makes it possible to bundle several flavors of the same binary into a `.framework`, e.g. debug and release, and to selectively choose which to link against
+* The compiler looks in the `.framework` for a `Headers` directory containing the headers defining the framework public interface. These can then be imported by clients using `#import <framework_name/header_name.h>`. More precisely, the structure of a MacOS framework is made of symbolic links and directories to handle various versions of a library within the same `.framework`. Refer to the MacOS framework programming guide for more information.
 
 The binary file located at the root of the `.framework` directory does not need to be diretctly executable, though. It can also be a universal binary file, created by the `lipo` command which brings together binaries compiled for different architectures. The linker then just figures out which `.a` it needs when a project is compiled, and extracts it from the universal binary file. Therefore, it is possible to create "fake" frameworks wrapping a static library. Though these frameworks are not frameworks in the Xcode sense, Xcode will happily deal with them and discover their content. For iOS frameworks (which do not embed a dynamic library), we do not need to create the whole directory structure and symbolic links needed to support different versions. Only one version will always be available, creating such a structure would therefore be overkill.
 
@@ -46,7 +46,7 @@ Here is how you usually should setup a project so that `make-fmwk` can be run on
 
 * Open an iOS application project
 * Add the `.staticframework` of your library to your project (by adding it to your project file tree, or by drag and drop)
-* When you need to include a library header file, use the `#import <file.h>` syntax. `make-fmwk` also creates a global header file from the public headers declared by the library, I usually recommend adding this file to your project precompiled header file. If your project contains a header wuth the same name, the generated content will be prepended to it
+* When you need to include a library header file, use the `#import <FrameworkName/file.h>` syntax. `make-fmwk` also creates a global header file from the public headers declared by the library, I usually recommend adding this file to your project precompiled header file. If your project contains a header wuth the same name, the generated content will be prepended to it
 
 ### Working with static framework versions
 
@@ -56,7 +56,7 @@ It is strongly advised to tag frameworks using the `-u` option. Projects using s
 
 Due to the highly dynamic nature of the Objective-C language, any method defined in a library might be called, explicitly or in hidden ways (e.g. by using `objc_msgSend`). Unlike C / C++, we would therefore expect the linker to be especially careful when stripping dead-code from Objective-C static libraries. In some cases, though, the linker still drops code it considers to be unused. Such code can still be referenced from an application, though, and I ran into the following issues:
 
-* Categories defined for objects not in the library: If such categories are defined "alone" in a source file, the linker will not load the corresponding code, and you will get an "Unrecognized selector" exception at runtime. This problem can also arise even if the category is not alone, provided the linker has no other reason to link with the object file it is contained in. For more information, refer to the following article: http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html
+* Categories defined for objects not in the library: If such categories are defined "alone" in a source file, the linker will not load the corresponding code, and you will get an "Unrecognized selector" exception at runtime. This problem can also arise even if the category is not alone, provided the linker has no other reason to link with the object file it is contained in. For more information, refer to [this article](http://developer.apple.com/library/mac/#qa/qa2006/qa1490.html)
 * When using library objects in Interface Builder, you might get an "Unknown class <class> in Interface Builder file" error in the console at runtime. If the library class inherits from an existing `UIKit` class, your application will not crash, but you will not get the new functionality your class implements, leading to incorrect behavior.
 
 The article mentioned above gives a solution to this problem: Add the `-ObjC` flag to the "Other linker flags" setting. For categories the `-all_load` also had to be added, as explained in the article, but this has been fixed by the new LLVM compiler.
@@ -91,7 +91,7 @@ This probably means that some of the source files should be added to your bootst
 
 ### Example
 
-For an example of a project which can be compiled using `make-fmwk`, check out my CoconutKit project (https://github.com/defagos/CoconutKit).
+For an example of a project which can be compiled using `make-fmwk`, check out [my CoconutKit project](https://github.com/defagos/CoconutKit).
 
 ### Known issues
 
@@ -107,10 +107,3 @@ Finally, you might encounter linker issues when using some static frameworks. Th
 ### Adapters
 
 Since this tool is not mainstream (and is unlikely to be), some projects cannot be used as is with the `make-fmwk` command. For some projets I find helpful, I will provide adapters which checkout the original source code and create a project that `make-fmwk` will be happy to deal with. Those are found under the `adapters` directory, and you simply need to run the provided `generate.sh` script to checkout the code, create the project and build the `.staticframework`s (which are saved into `~/StaticFrameworks`).
-
-### Version history
-
-* 1.0 (September 2010): Initial release
-* 1.1 (October 2010): Convention over configuration philosophy. Easier to use
-* 1.2 (October 2010): Ability to force link for specific files. Other minor improvements
-* 1.3 (May 2012): Minor fixes for Xcode 4, removal of the useless `link-fmwk.sh` command, and shortened documentation
