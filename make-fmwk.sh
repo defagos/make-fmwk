@@ -91,10 +91,11 @@ usage() {
     echo "Usage: $SCRIPT_NAME [-p project_name][-k sdk_version] [-t target_name]"
     echo "         [-u code_version] [-o output_dir] [-l log_dir] [-f public_headers_file]"
     echo "         [-b bootstrap_file] [-K] [-n] [-s] [-S scheme_name] [-v] [-h] [-L]"
-    echo "         [-X] [configuration_name ...]"
+    echo "         [-X] [additional_configuration_name ...]"
     echo ""
     echo "Optional parameters:"
-    echo "   configuration_name     The names of the configurations to use"
+    echo "   additional_configuration_name     The name of an additional configuration"
+    echo "                                     to build"
     echo ""
     echo "Options:"
     echo "   -b:                    Path to the bootstrap file. This file lists"
@@ -232,10 +233,10 @@ while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
 done
 
 # Read specified configurations
-configuration_names=()
+additional_configuration_names=()
 shift `expr $OPTIND - 1`
 for arg in "$@"; do
-    configuration_names+=("$arg")
+    additional_configuration_names+=("$arg")
 done
 
 # xctool
@@ -378,38 +379,39 @@ do
     fi
 done
 
-# If no configuration specified, use them all
-if [ "${#configuration_names[@]}" -eq "0" ]; then
-    valid_configuration_names=("${available_configuration_names[@]}")
-# Otherwise check against available configurations
-else
-    valid_configuration_names=()
-    for configuration_name in ${configuration_names[@]}
+# Collect valid configuration names to build
+valid_configuration_names=("$primary_configuration_name")
+for additional_configuration_name in ${additional_configuration_names[@]}
+do
+    # TODO: Ensure a configuration is not added to the list twice
+
+    # Check whether the configuration is available or not
+    found=false
+    for available_configuration_name in ${available_configuration_names[@]}
     do
-        # Check whether the configuration is available or not
-        found=false
-        for available_configuration_name in ${available_configuration_names[@]}
-        do
-            if [ "$configuration_name" == "$available_configuration_name" ]; then
-                found=true
-                break
-            fi
-        done
-
-        if ! $found; then
-            echo "[INFO] The configuration '$configuration_name' does not exist. Skipped" 
-            continue
+        if [ "$additional_configuration_name" == "$available_configuration_name" ]; then
+            found=true
+            break
         fi
-
-        valid_configuration_names+=("$configuration_name")
     done
-fi
+
+    if ! $found; then
+        echo "[INFO] The configuration '$additional_configuration_name' does not exist. Skipped" 
+        continue
+    fi
+
+    valid_configuration_names+=("$additional_configuration_name")
+done
 
 # At least one valid configuration must be found
 if [ "${#valid_configuration_names[@]}" -eq "0" ]; then
     echo "[ERROR] No valid configuration found"
     exit 1
 fi
+
+echo "${valid_configuration_names[@]}"
+
+exit
 
 # TODO: If primary conf not in valid confs, use the first one
 
