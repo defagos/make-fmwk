@@ -169,6 +169,21 @@ check_prefix() {
         fi
 }
 
+# Check if a value exists in an array
+#   @param $1 mixed Needle  
+#   @param $2 array Haystack
+#   @return Success (0) if value exists, Failure (1) otherwise
+# Usage: contains_element "$needle" "${haystack[@]}"
+# See: http://fvue.nl/wiki/Bash:_Check_if_array_element_exists
+contains_element() {
+    local hay needle=$1
+    shift
+    for hay; do
+        [[ $hay == $needle ]] && return 0
+    done
+    return 1
+}
+
 # Processing command-line parameters
 while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
     case "$OPT" in
@@ -383,22 +398,20 @@ done
 valid_configuration_names=("$primary_configuration_name")
 for additional_configuration_name in ${additional_configuration_names[@]}
 do
-    # TODO: Ensure a configuration is not added to the list twice
+    # Do not add the same configuration twice
+    contains_element "$additional_configuration_name" "${valid_configuration_names[@]}"
+    if [ "$?" -eq "0" ]; then
+        continue
+    fi
 
     # Check whether the configuration is available or not
-    found=false
-    for available_configuration_name in ${available_configuration_names[@]}
-    do
-        if [ "$additional_configuration_name" == "$available_configuration_name" ]; then
-            found=true
-            break
-        fi
-    done
-
-    if ! $found; then
+    contains_element "$additional_configuration_name" "${available_configuration_names[@]}"
+    if [ "$?" -eq "1" ]; then
         echo "[INFO] The configuration '$additional_configuration_name' does not exist. Skipped" 
         continue
     fi
+
+    echo "Add $additional_configuration_name"
 
     valid_configuration_names+=("$additional_configuration_name")
 done
@@ -408,12 +421,6 @@ if [ "${#valid_configuration_names[@]}" -eq "0" ]; then
     echo "[ERROR] No valid configuration found"
     exit 1
 fi
-
-echo "${valid_configuration_names[@]}"
-
-exit
-
-# TODO: If primary conf not in valid confs, use the first one
 
 # Target and scheme resolution:
 #   - if a scheme has been provided, use it
