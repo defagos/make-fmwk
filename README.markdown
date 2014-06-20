@@ -79,10 +79,6 @@ To achieve this result, this script proceeds as follows:
 
 When a static framework is added to a project, the bootstrap code gets compiled as well. Even if the dummy function it contains is not used, the linker will happily load all dummy classes it references since their class method is called. This prevents the linker from discarding the translation units they are defined in, leading to the desired effect.
  
-#### Remark
-
-When the source code is bundled into the `.staticframework`, no bootstrapping is needed. Since the whole source code is available, the linking will not be as aggressive as it is when linking to a static library. In such cases the bootstrapping file will be ignored, even if provided.
- 
 ### Troubleshooting
 
 #### 'I get an “Unknown class <class> in Interface Builder file" error in the console at runtime' or 'I get a "selector not recognized" exception when calling a category method stemming from a static library'

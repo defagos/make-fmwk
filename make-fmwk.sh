@@ -17,7 +17,6 @@ FORCE_LINK_TAG="FILE_FORCE_LINK"
 param_bootstrap_file=""
 param_code_version=""
 param_framework_name=""
-param_source_files=false
 param_log_dir=""
 param_lock_output=false
 param_omit_version_in_name=false
@@ -131,8 +130,7 @@ usage() {
     echo "                          specified, ~/StaticFrameworks is used"
     echo "   -p:                    If you have multiple projects in the same directory, indicate which"
     echo "                          one must be used using this option (without the .xcodeproj extension)"
-    echo "   -s:                    Pack the complete source code into the static framework."
-    echo "   -S:                    The scheme to use"
+    echo "   -s:                    The scheme to use"
     echo "   -t:                    The target to use"
     echo "   -u                     Tag identifying the version of the code which has been compiled. Added"
     echo "                          to the framework info.plist and appended to the framework name (if -n"
@@ -155,7 +153,7 @@ check_prefix() {
     file_name="${1##*/}"
         echo "$file_name" | grep "^${2}_" &> /dev/null
         if [ "$?" -ne "0" ]; then
-            echo "[Warning] The resource file $file_name should be prefixed with ${2}_ to avoid conflicts with other resources"
+            echo "[WARN] The resource file $file_name should be prefixed with ${2}_ to avoid conflicts with other resources"
         fi
 }
 
@@ -175,7 +173,7 @@ contains_element() {
 }
 
 # Processing command-line parameters
-while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
+while getopts b:f:hk:Kl:LnN:o:p:s:t:u:vX OPT; do
     case "$OPT" in
         b)
             param_bootstrap_file="$OPTARG"
@@ -212,9 +210,6 @@ while getopts b:f:hk:Kl:LnN:o:p:sS:t:u:vX OPT; do
             param_project_name="$OPTARG"
             ;;
         s)
-            param_source_files=true
-            ;;
-        S)
             param_scheme_name="$OPTARG"
             ;;
         t)
@@ -263,7 +258,7 @@ fi
 
 # Check that the public header file exists
 if [ ! -f "$public_headers_file" ]; then
-    echo "[Error] The public header file $public_headers_file does not exist"
+    echo "[ERROR] The public header file $public_headers_file does not exist"
     exit 1
 fi
 
@@ -273,7 +268,7 @@ if [ -z "$param_bootstrap_file" ]; then
 else
     # Check that the specified file exists
     if [ ! -f "$param_bootstrap_file" ]; then
-        echo "[Error] The specified bootstrap file $param_bootstrap_file does not exist"
+        echo "[ERROR] The specified bootstrap file $param_bootstrap_file does not exist"
         exit 1
     fi
     bootstrap_file="$param_bootstrap_file"
@@ -285,13 +280,13 @@ if [ -z "$param_project_name" ]; then
     
     # Not found
     if [ "$?" -ne "0" ]; then
-        echo "[Error] No .xcodeproj directory found"
+        echo "[ERROR] No .xcodeproj directory found"
         exit 1
     fi
     
     # Several projects found
     if [ `echo "$xcodeproj_list" | wc -l` -ne "1" ]; then
-        echo "[Error] Several .xcodeproj directories found; use the -p option for disambiguation"
+        echo "[ERROR] Several .xcodeproj directories found; use the -p option for disambiguation"
         exit 1
     fi
     
@@ -300,7 +295,7 @@ if [ -z "$param_project_name" ]; then
 # Else check that the project specified exists
 else
     if [ ! -d "$EXECUTION_DIR/$param_project_name.xcodeproj" ]; then
-        echo "[Error] The project $param_project_name does not exist"
+        echo "[ERROR] The project $param_project_name does not exist"
         exit 1
     fi
     
@@ -316,7 +311,7 @@ if [ -z "$param_sdk_version" ]; then
 else
     xcodebuild -showsdks | grep -w "iphoneos$param_sdk_version" > /dev/null
     if [ "$?" -ne "0" ]; then
-        echo "[Error] Incorrect SDK version, or SDK version not available on this computer"
+        echo "[ERROR] Incorrect SDK version, or SDK version not available on this computer"
         exit 1
     fi
     sdk_version="$param_sdk_version"
@@ -333,7 +328,7 @@ fi
 if [ ! -d "$output_dir" ]; then
     mkdir -p "$output_dir"
     if [ "$?" -ne "0" ]; then
-        echo "[Error] Cannot create output directory"
+        echo "[ERROR] Cannot create output directory"
         exit 1
     fi
 fi
@@ -352,7 +347,7 @@ fi
 
 # Cannot have both a parameter and a scheme set (the scheme specifies the target to build)
 if [[ ! -z "$param_scheme_name" && ! -z "$param_target_name" ]]; then
-    echo "[Error] A scheme and a target cannot be simultaneously provided"
+    echo "[ERROR] A scheme and a target cannot be simultaneously provided"
     exit 1
 fi
 
@@ -422,12 +417,12 @@ elif [ ! -z "$param_target_name" ]; then
     target_name="$param_target_name"
 elif [ ! -z "$default_scheme_name" ]; then
     scheme_name="$default_scheme_name"
-    echo "[Info] Use $default_scheme_name as default scheme for compilation"
+    echo "[INFO] Use $default_scheme_name as default scheme for compilation"
 elif [ ! -z "$default_target_name" ]; then
     target_name="$default_target_name"
-    echo "[Info] Use $default_target_name as default target for compilation"
+    echo "[INFO] Use $default_target_name as default target for compilation"
 else
-    echo "[Error] No scheme or target available"
+    echo "[ERROR] No scheme or target available"
     exit 1
 fi
 
@@ -451,24 +446,19 @@ if [ ! -z "$param_code_version" ]; then
     fi
 # Warns if no version specified (good practice)
 else
-    echo "[Info] You should provide a code version for better traceability; use the -u option"
+    echo "[INFO] You should provide a code version for better traceability; use the -u option"
     framework_full_name="$framework_name"
 fi
 
-# If sources are packaged within the framework, appends an additional extension
-if $param_source_files; then
-    framework_full_name="$framework_full_name-src"
-fi
-
 # Create framework
-echo "Creating framework pseudo-bundle..."
+echo "[INFO] Creating framework pseudo-bundle..."
 
 # Framework directory
 framework_output_dir="$output_dir/$framework_full_name.staticframework"
 
 # Cleanup framework if it already existed
 if [ -d "$framework_output_dir" ]; then
-    echo "Framework already exists. Cleaning up first..."
+    echo "[INFO] Framework already exists. Cleaning up first..."
     
     # Restore write permissions (if any were set)
     find "$output_dir" -path "*/$framework_full_name.staticframework/*" -exec chmod u+w {} \;
@@ -479,72 +469,69 @@ fi
 # Create the main framework directory
 mkdir -p "$framework_output_dir"
 if [ "$?" -ne "0" ]; then
-    echo "[Error] Cannot create static framework"
+    echo "[ERROR] Cannot create static framework"
     exit 1
 fi
 
-# Creation of the bootstrap code for selective forced linking (not required when the source code has been included;
-# in this case the linker will find everything it needs)
-if ! $param_source_files; then
-    echo "Generating bootstrap code..."
-    bootstrap_output_dir="$framework_output_dir/Bootstrap"
-    mkdir -p "$bootstrap_output_dir"
-    bootstrap_output_file="$bootstrap_output_dir/${framework_name}_bootstrap.m"
-    echo -e "// This file is automatically generated; please do not modify\n" > "$bootstrap_output_file"
-    echo "#import <Foundation/Foundation.h>" >> "$bootstrap_output_file"
-    
-    # Bootstrap function name is framework name without characters forbidden for function names
-    framework_name_clean=`echo "$framework_name" | sed 's/[-+]//g'`
-    
-    # Begin of the bootstrap function code
-    bootstrap_function="__attribute__((unused)) void ${framework_name_clean}_bootstrap(void);"
-    bootstrap_function="$bootstrap_function\n__attribute__((unused)) void ${framework_name_clean}_bootstrap(void)\n{"
-    
-    # Add bootstrapping code to all classes listed in the bootstrap file (if any)
-    if [ -f "$bootstrap_file" ]; then
-        bootstrapped_files_arr=(`cat "$bootstrap_file" | grep -v '^$'`)
-        for bootstrapped_file in ${bootstrapped_files_arr[@]}
-        do
-            # Locate the source file
-            bootstrapped_path=`find "$EXECUTION_DIR" -name "$bootstrapped_file" -not -path "*/build/*"`
-            if [ -z "$bootstrapped_path" ]; then
-                echo "[Warning] The source file $bootstrapped_file appearing in the bootstrap file $bootstrap_file does not exist"
-                continue
-            fi
-            
-            # Make a backup copy first, we will add some dummy class to the source file to force linkage with it
-            cp "$bootstrapped_path" "$bootstrapped_path.backup"
-            
-            # Extract file name witout extension
-            file_name=`basename $bootstrapped_path`
-            file_name=${file_name%.*}
-            
-            # Class name is file name without characters forbidden for class names
-            file_name_clean=`echo "$file_name" | sed 's/[-+]//g'`
-            
-            # Add a dummy class declaration and definition to the source file. This definition is added at the end of the file
-            # to leave line numbers intact in comparison to the original source files (useful if the original code logs source
-            # file line numbers for debugging purposes)
-            linker_class_interface="\n@interface ${file_name_clean}_Linker : NSObject\n+ (void)link;\n@end\n"
-            linker_class_implementation="\n@implementation ${file_name_clean}_Linker\n+ (void)link {}\n@end\n"
-            echo -e "$linker_class_interface" >> "$bootstrapped_path"
-            echo -e "$linker_class_implementation" >> "$bootstrapped_path"
-            
-            # Repeat dummy class interface in bootstrap file; this way we avoid the need for a common header file listing all
-            # dummy classes
-            echo -e "$linker_class_interface" >> "$bootstrap_output_file"
-            
-            # Call the static dummy class method from the bootstrap function
-            bootstrap_function="$bootstrap_function\n\t[${file_name_clean}_Linker link];"
-        done
-    else
-        echo "[Info] No bootstrap file has been provided"
-    fi
+# Creation of the bootstrap code for selective forced linking
+echo "[INFO] Generating bootstrap code..."
+bootstrap_output_dir="$framework_output_dir/Bootstrap"
+mkdir -p "$bootstrap_output_dir"
+bootstrap_output_file="$bootstrap_output_dir/${framework_name}_bootstrap.m"
+echo -e "// This file is automatically generated; please do not modify\n" > "$bootstrap_output_file"
+echo "#import <Foundation/Foundation.h>" >> "$bootstrap_output_file"
 
-    # End of the bootstrap function; add it to the bootstrap source file
-    bootstrap_function="$bootstrap_function\n}"
-    echo -e "$bootstrap_function" >> "$bootstrap_output_file"
+# Bootstrap function name is framework name without characters forbidden for function names
+framework_name_clean=`echo "$framework_name" | sed 's/[-+]//g'`
+
+# Begin of the bootstrap function code
+bootstrap_function="__attribute__((unused)) void ${framework_name_clean}_bootstrap(void);"
+bootstrap_function="$bootstrap_function\n__attribute__((unused)) void ${framework_name_clean}_bootstrap(void)\n{"
+
+# Add bootstrapping code to all classes listed in the bootstrap file (if any)
+if [ -f "$bootstrap_file" ]; then
+    bootstrapped_files_arr=(`cat "$bootstrap_file" | grep -v '^$'`)
+    for bootstrapped_file in ${bootstrapped_files_arr[@]}
+    do
+        # Locate the source file
+        bootstrapped_path=`find "$EXECUTION_DIR" -name "$bootstrapped_file" -not -path "*/build/*"`
+        if [ -z "$bootstrapped_path" ]; then
+            echo "[WARN] The source file $bootstrapped_file appearing in the bootstrap file $bootstrap_file does not exist"
+            continue
+        fi
+        
+        # Make a backup copy first, we will add some dummy class to the source file to force linkage with it
+        cp "$bootstrapped_path" "$bootstrapped_path.backup"
+        
+        # Extract file name witout extension
+        file_name=`basename $bootstrapped_path`
+        file_name=${file_name%.*}
+        
+        # Class name is file name without characters forbidden for class names
+        file_name_clean=`echo "$file_name" | sed 's/[-+]//g'`
+        
+        # Add a dummy class declaration and definition to the source file. This definition is added at the end of the file
+        # to leave line numbers intact in comparison to the original source files (useful if the original code logs source
+        # file line numbers for debugging purposes)
+        linker_class_interface="\n@interface ${file_name_clean}_Linker : NSObject\n+ (void)link;\n@end\n"
+        linker_class_implementation="\n@implementation ${file_name_clean}_Linker\n+ (void)link {}\n@end\n"
+        echo -e "$linker_class_interface" >> "$bootstrapped_path"
+        echo -e "$linker_class_implementation" >> "$bootstrapped_path"
+        
+        # Repeat dummy class interface in bootstrap file; this way we avoid the need for a common header file listing all
+        # dummy classes
+        echo -e "$linker_class_interface" >> "$bootstrap_output_file"
+        
+        # Call the static dummy class method from the bootstrap function
+        bootstrap_function="$bootstrap_function\n\t[${file_name_clean}_Linker link];"
+    done
+else
+    echo "[INFO] No bootstrap file has been provided"
 fi
+
+# End of the bootstrap function; add it to the bootstrap source file
+bootstrap_function="$bootstrap_function\n}"
+echo -e "$bootstrap_function" >> "$bootstrap_output_file"
 
 # Run the builds (with bootstrap code if any). Overrides some project settings so that all binary flavors are built. The deployment target must match the kind of
 # binary built, otherwise compilation fails
@@ -556,7 +543,7 @@ do
     configuration_build_dir_32_bits="$BUILD_DIR_32_BITS/$configuration_name"
     configuration_build_dir_64_bits="$BUILD_DIR_64_BITS/$configuration_name"
 
-    echo "Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    echo "[INFO] Building $project_name simulator binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
     eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
         ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_32_bits' PRODUCT_NAME=Static-i386 ARCHS=i386 VALID_ARCHS=i386" &> "$log_dir/$framework_full_name-$configuration_name-i386.buildlog" 
     if [ "$?" -ne "0" ]; then
@@ -564,7 +551,7 @@ do
         build_failure=true
     fi
 
-    echo "Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    echo "[INFO] Building $project_name device binaries (32-bits) for $configuration_name configuration (SDK $sdk_version)..."
     eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=5.0 \
         ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_32_bits' PRODUCT_NAME=Static-armv ARCHS='armv6 armv7 armv7s' VALID_ARCHS='armv6 armv7 armv7s'" &> "$log_dir/$framework_full_name-$configuration_name-armv.buildlog"
     if [ "$?" -ne "0" ]; then
@@ -572,7 +559,7 @@ do
         build_failure=true
     fi
 
-    echo "Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    echo "[INFO] Building $project_name simulator binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
     eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphonesimulator$sdk_version PHONEOS_DEPLOYMENT_TARGET=7.0 \
         ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_64_bits' PRODUCT_NAME=Static-x64 ARCHS=x86_64 VALID_ARCHS=x86_64" &> "$log_dir/$framework_full_name-$configuration_name-x64.buildlog" 
     if [ "$?" -ne "0" ]; then
@@ -580,7 +567,7 @@ do
         build_failure=true
     fi
 
-    echo "Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
+    echo "[INFO] Building $project_name device binaries (64-bits) for $configuration_name configuration (SDK $sdk_version)..."
     eval "$build_tool -configuration $configuration_name -project $project_name.xcodeproj ${target_name:+-target $target_name} -sdk iphoneos$sdk_version IPHONEOS_DEPLOYMENT_TARGET=7.0 \
         ${scheme_name:+-scheme $scheme_name} CONFIGURATION_BUILD_DIR='$configuration_build_dir_64_bits' PRODUCT_NAME=Static-arm64 ARCHS=arm64 VALID_ARCHS=arm64" &> "$log_dir/$framework_full_name-$configuration_name-arm64.buildlog"
     if [ "$?" -ne "0" ]; then
@@ -589,23 +576,21 @@ do
     fi
 done
 
-# Restore the original source code without bootstrapping code (only if source code not bundled, see above)
-if ! $param_source_files; then
-    if [ -f "$bootstrap_file" ]; then
-        bootstrapped_files_arr=(`cat "$bootstrap_file" | grep -v '^$'`)
-        for bootstrapped_file in ${bootstrapped_files_arr[@]}
-        do
-            # Locate the source file
-            bootstrapped_path=`find "$EXECUTION_DIR" -name "$bootstrapped_file" -not -path "*/build/*"`
-            if [ -z "$bootstrapped_path" ]; then
-                # We already issued a warning previously, just skip
-                continue
-            fi
-            
-            # Restore the original file
-            mv "$bootstrapped_path.backup" "$bootstrapped_path"
-        done
-    fi
+# Restore the original source code without bootstrapping code
+if [ -f "$bootstrap_file" ]; then
+    bootstrapped_files_arr=(`cat "$bootstrap_file" | grep -v '^$'`)
+    for bootstrapped_file in ${bootstrapped_files_arr[@]}
+    do
+        # Locate the source file
+        bootstrapped_path=`find "$EXECUTION_DIR" -name "$bootstrapped_file" -not -path "*/build/*"`
+        if [ -z "$bootstrapped_path" ]; then
+            # We already issued a warning previously, just skip
+            continue
+        fi
+        
+        # Restore the original file
+        mv "$bootstrapped_path.backup" "$bootstrapped_path"
+    done
 fi
 
 # Exit on failure
@@ -633,7 +618,7 @@ mkdir -p "$headers_output_dir"
 # must bear the exact same name as the framework. Other binaries NameSuffix can be linked against using -framework,Suffix,
 # see ld documentation. Note that the the suffix is case-insensitive, i.e. -framework,suffix or -framework,suffiX work as
 # well, for example
-echo "Packing binaries..."
+echo "[INFO] Packing binaries..."
 for configuration_name in ${valid_configuration_names[@]}
 do
     configuration_build_dir_32_bits="$BUILD_DIR_32_BITS/$configuration_name"
@@ -649,7 +634,7 @@ do
 done
 
 # Load the public header file list into an array (remove blank lines if anys)
-echo "Copying public header files..."
+echo "[INFO] Copying public header files..."
 public_headers_arr=(`cat "$public_headers_file" | grep -v '^$'`)
 
 # Locate each public file and add it to the framework bundle
@@ -658,7 +643,7 @@ do
     # Header files are also copied into the build directories, need to omit those files
     header_path=`find "$EXECUTION_DIR" -name "$header_file" -not -path "*/build/*"`
     if [ -z "$header_path" ]; then
-        echo "[Warning] The header file $header_file appearing in $public_headers_file does not exist"
+        echo "[WARN] The header file $header_file appearing in $public_headers_file does not exist"
         continue
     fi
     
@@ -666,7 +651,7 @@ do
     cp "$header_path" "$headers_output_dir" > /dev/null
     # The copy might fail, most notably if the header file appears several times in the source tree
     if [ "$?" -ne "0" ]; then
-        echo "[Warning] Failed to copy $header_path; does this file appear once in your source tree?"
+        echo "[WARN] Failed to copy $header_path; does this file appear once in your source tree?"
         continue
     fi
 done
@@ -705,7 +690,7 @@ if [ ! -f "$global_header_file" ]; then
     echo "$global_header_file_contents" > "$global_header_file"
 # Warn if a public header with this name already exists, and prepend with the global header file contents
 else
-    echo "[Info] A public header file bearing the same name as the framework already exists; global imports will be added "
+    echo "[INFO] A public header file bearing the same name as the framework already exists; global imports will be added "
     echo "       at the top of the existing header"
 
     echo "$global_header_file_contents" | cat - "$global_header_file" > tempFile && mv tempFile "$global_header_file"
@@ -728,7 +713,7 @@ mkdir -p "$resources_output_dir"
 # that the exclusion patterns below do not remove directories (since they end up with /*), but since cp is used 
 # (and not cp -r) they won't be copied. Had we simply used "*/build*"-like patterns, then directories like */buildxyz
 # would have been excluded as well, which is incorrect 
-echo "Copying resource files..."
+echo "[INFO] Copying resource files..."
 resource_files=(`find "$EXECUTION_DIR" \
     -not -path "*/.*" \
     -not -path "*/build/*" \
@@ -765,7 +750,7 @@ do
 done
 
 # Copy localized resources, preserving the directory structure
-echo "Copying localized resource files..."
+echo "[INFO] Copying localized resource files..."
 localized_resource_files=(`find . -path "*.lproj/*" -not -path "*/.*" -not -path "*/build/*" -not -path "*/*.bundle/*"`)
 for localized_resource_file in ${localized_resource_files[@]}
 do
@@ -794,31 +779,8 @@ done
 # Delete Resources directory if empty
 rmdir "$resources_output_dir" 2> /dev/null
 
-# Copy only sources if desired (useful for debugging purposes)
-if $param_source_files; then
-    echo "Copying source code..."
-
-    # Create the source directory
-    sources_output_dir="$framework_output_dir/Sources"
-    mkdir -p "$sources_output_dir"
-    
-    # Copy all source files
-    source_files=(`find "$EXECUTION_DIR" \( -name "*.m" -o -name "*.mm" -o -name "*.c" -o -name "*.C" -o -name "*.cpp" \) -not -path "*/build/*"`)
-    for source_file in ${source_files[@]}
-    do
-        cp "$source_file" "$sources_output_dir"
-    done
-    
-    # Copy all header files (omit duplicates in build directory)
-    header_files=(`find "$EXECUTION_DIR" -name "*.h" -not -path "*/build/*"`)
-    for header_file in ${header_files[@]}
-    do
-        cp "$header_file" "$sources_output_dir"
-    done
-fi
-
 # Create the modulemap file (see http://clang.llvm.org/docs/Modules.html)
-echo "Creating modulemap file..."
+echo "[INFO] Creating modulemap file..."
 modules_dir="$dot_framework_output_dir/Modules"
 mkdir "$modules_dir"
 
@@ -835,7 +797,7 @@ echo "}" >> "$modules_file"
 deployment_target=`xcodebuild -showBuildSettings | grep IPHONEOS_DEPLOYMENT_TARGET | sed -E 's/.*= (.*)/\1/g'`
 
 # Add a manifest file
-echo "Creating manifest file..."
+echo "[INFO] Creating manifest file..."
 manifest_file="$dot_framework_output_dir/$framework_name-staticframework-Info.plist"
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
@@ -875,9 +837,9 @@ fi
 
 # Cleanup build products
 if $param_cleanup_build_products; then
-    echo "Cleanup build files..."
+    echo "[INFO] Cleanup build files..."
     rm -rf "$BUILD_DIR_COMMON"
 fi
 
 # Done
-echo "Done creating $framework_full_name.staticframework"
+echo "[INFO] Done creating $framework_full_name.staticframework"
