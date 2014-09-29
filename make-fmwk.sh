@@ -798,7 +798,7 @@ deployment_target=`xcodebuild -showBuildSettings | grep IPHONEOS_DEPLOYMENT_TARG
 
 # Add a manifest file
 echo "[INFO] Creating manifest file..."
-manifest_file="$dot_framework_output_dir/$framework_name-staticframework-Info.plist"
+manifest_file="$dot_framework_output_dir/$framework_name.plist"
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> "$manifest_file"
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/echo PropertyList-1.0.dtd\">" >> "$manifest_file"
 echo "<plist version=\"1.0\">" >> "$manifest_file"
