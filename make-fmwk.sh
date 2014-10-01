@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Constants
-VERSION_NBR=2.0
+VERSION_NBR=2.0.1
 SCRIPT_NAME=`basename $0`
 # Directory from which the script is executed
 EXECUTION_DIR=`pwd`
